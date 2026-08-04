@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.17.0
+
+### Runtime
+- **Node 24 LTS** — Docker image moved from `node:20-alpine` to `node:24-alpine`. Node 20 "Iron" reached end-of-life on 2026-04-30, so published images were running a runtime receiving no security patches. Node 24 "Krypton" is supported until 2028-04-30.
+- **better-sqlite3 11 → 12** — Required for Node 24, not cosmetic: v11 declares no `engines` and crashes on Node 24 with a native assertion in `Statement::~Statement()`. v12 supports Node `20.x || 22.x || 23.x || 24.x || 25.x || 26.x`.
+- **Fixed production install flag** — `npm ci --only=production` → `npm ci --omit=dev`. The `--only` flag was removed in npm 11 (shipped with `node:24-alpine`), which would have silently installed devDependencies into the production image.
+
+### Security
+- **Dependency updates** — `npm audit fix` resolved 8 of 12 advisories, including `qs`/`express` (the only production-facing one), plus `vite`, `rollup`, `picomatch`, and `shell-quote`. Remaining advisories are devDependencies only and never ship in the image.
+- **Build context hardening** — `.dockerignore` patterns are root-anchored and so never matched nested paths. Added `**/node_modules` and `**/.env*` variants, plus the abandoned `app/` prototype directory. Build context dropped from ~905 MB to negligible, and nested `.env` files no longer reach the builder stage.
+
+### Notes
+- Verified against real production data: all read endpoints return byte-identical JSON on Node 24 + better-sqlite3 12 versus Node 20 + better-sqlite3 11, with schema at v14 and `integrity_check: ok`.
+- Both `linux/amd64` and `linux/arm64` images build successfully.
+- No user-facing feature or behavior changes.
+
 ## v0.16.0
 
 ### New Features
