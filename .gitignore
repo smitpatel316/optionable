@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Abandoned Next.js/Prisma prototype
+app/
+
 # Build output
 dist/
 

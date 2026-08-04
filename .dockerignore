@@ -1,5 +1,9 @@
-# Dependencies
+# Dependencies (patterns here are root-anchored, so ** is needed for nested dirs)
 node_modules/
+**/node_modules
+
+# Abandoned Next.js/Prisma prototype — not part of the build
+app/
 
 # Build output (will be created in Docker)
 dist/
@@ -12,10 +16,13 @@ data/
 .git/
 .gitignore
 
-# Environment files
+# Environment files (** so nested secrets never reach the build context)
 .env
 .env.local
 .env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
 
 # Editor
 .idea/

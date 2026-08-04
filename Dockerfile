@@ -1,5 +1,5 @@
 # Build stage - compile frontend
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine AS production
+FROM node:24-alpine AS production
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ RUN apk add --no-cache python3 make g++
 COPY package*.json ./
 
 # Install only production dependencies
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Remove build dependencies to reduce image size
 RUN apk del python3 make g++

@@ -12,7 +12,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "better-sqlite3": "^11.6.0",
+        "better-sqlite3": "^12.11.1",
         "cors": "^2.8.5",
         "express": "^4.21.1",
         "papaparse": "^5.5.3",
