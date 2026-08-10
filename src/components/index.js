@@ -32,3 +32,6 @@ export { StocksTable } from './portfolio/StocksTable';
 export { StockModal } from './portfolio/StockModal';
 export { MonthlyPLChart } from './portfolio/MonthlyPLChart';
 export { IncomeSourcesChart } from './portfolio/IncomeSourcesChart';
+
+// Income Components
+export { IncomeView } from './income/IncomeView';

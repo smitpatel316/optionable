@@ -28,7 +28,8 @@ import {
     SummaryCards,
     PositionsTable,
     SettingsModal,
-    PortfolioView
+    PortfolioView,
+    IncomeView
 } from './components';
 
 import { API_URL } from './utils/constants';
@@ -214,7 +215,7 @@ export default function App() {
 
                 {/* Tab Bar (only when portfolio mode enabled) */}
                 {portfolioModeEnabled && (
-                    <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+                    <TabBar activeTab={activeTab} onTabChange={setActiveTab} showIncome={appSettings.income_tab_enabled === 'true'} />
                 )}
 
                 {/* Options View */}
@@ -262,6 +263,11 @@ export default function App() {
                         {/* Summary Cards */}
                         <SummaryCards stats={stats} />
                     </>
+                )}
+
+                {/* Income View (custom fork addition: income breakdown + SPY benchmark) */}
+                {portfolioModeEnabled && activeTab === 'income' && (
+                    <IncomeView accountId={selectedAccountId} darkMode={darkMode} />
                 )}
 
                 {/* Portfolio View */}

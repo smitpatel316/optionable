@@ -1,10 +1,11 @@
 import React from 'react';
-import { TrendingUp, Briefcase } from 'lucide-react';
+import { TrendingUp, Briefcase, Landmark } from 'lucide-react';
 
-export const TabBar = ({ activeTab, onTabChange }) => {
+export const TabBar = ({ activeTab, onTabChange, showIncome = false }) => {
     const tabs = [
         { id: 'options', label: 'Options', icon: TrendingUp },
         { id: 'portfolio', label: 'Portfolio', icon: Briefcase },
+        ...(showIncome ? [{ id: 'income', label: 'Income', icon: Landmark }] : []),
     ];
 
     return (
