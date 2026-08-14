@@ -23,6 +23,7 @@ import {
     TabBar,
     Dashboard,
     PnLChart,
+    EnginePanels,
     TradeTable,
     TradeModal,
     SummaryCards,
@@ -223,6 +224,9 @@ export default function App() {
                     <>
                         {/* Dashboard Grid */}
                         <Dashboard stats={stats} />
+
+                        {/* Engine observability: capital card + scan funnel (wheel-stack pushes) */}
+                        <EnginePanels />
 
                         {/* P/L Chart */}
                         <PnLChart

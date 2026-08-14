@@ -441,6 +441,19 @@ const migrations = [
             db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('call_put_migration_v1', 'true');
             db.pragma('foreign_keys = ON');
         }
+    },
+    {
+        version: 15,
+        description: 'Engine dashboard key-value store (wheel-stack pushes)',
+        up: () => {
+            db.exec(`
+                CREATE TABLE IF NOT EXISTS engine_dashboard (
+                    key TEXT PRIMARY KEY,
+                    payload TEXT NOT NULL,
+                    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+        }
     }
 ];
 

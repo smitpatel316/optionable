@@ -9,6 +9,7 @@ export { TabBar } from './layout/TabBar';
 // Dashboard Components
 export { Dashboard } from './dashboard/Dashboard';
 export { SummaryCards } from './dashboard/SummaryCards';
+export { EnginePanels } from './engine/EnginePanels';
 
 // Chart Components
 export { PnLChart } from './chart/PnLChart';
