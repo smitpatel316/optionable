@@ -159,12 +159,16 @@ const ScanFunnel = ({ scanRun, updatedAt }) => {
     const symbols = scanRun.symbols;
     const passed = symbols.filter(s => !s.dropReason).length;
     const sold = symbols.filter(s => s.action === 'sold').length;
-    const considered = symbols.reduce((n, s) => n + (s.contractsConsidered || 0), 0);
+    const considered = scanRun.contractsConsidered ??
+        symbols.reduce((n, s) => n + (s.contractsConsidered || 0), 0);
 
-    // Aggregate reject reasons across surviving symbols
+    // Aggregate reject reasons across surviving symbols (or run-level aggregate)
     const rejectTotals = {};
-    for (const s of symbols) {
-        for (const [k, v] of Object.entries(s.rejects || {})) {
+    const rejectSource = scanRun.aggregateRejects
+        ? [scanRun.aggregateRejects]
+        : symbols.map(s => s.rejects || {});
+    for (const rej of rejectSource) {
+        for (const [k, v] of Object.entries(rej)) {
             rejectTotals[k] = (rejectTotals[k] || 0) + v;
         }
     }
@@ -193,6 +197,10 @@ const ScanFunnel = ({ scanRun, updatedAt }) => {
                             </span>
                         ))}
                     </div>
+                )}
+
+                {scanRun.note && (
+                    <div className="text-xs text-slate-500 dark:text-slate-400">{scanRun.note}</div>
                 )}
 
                 <div className="overflow-y-auto max-h-64">
