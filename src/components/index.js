@@ -20,6 +20,7 @@ export { TradeModal } from './trades/TradeModal';
 
 // Position Components
 export { PositionsTable } from './positions/PositionsTable';
+export { OpenPositionsTable } from './positions/OpenPositionsTable';
 
 // Settings Components
 export { SettingsModal } from './settings/SettingsModal';

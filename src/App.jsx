@@ -25,6 +25,7 @@ import {
     PnLChart,
     EnginePanels,
     TradeTable,
+    OpenPositionsTable,
     TradeModal,
     SummaryCards,
     PositionsTable,
@@ -237,6 +238,9 @@ export default function App() {
                             darkMode={darkMode}
                         />
 
+                        {/* Open Positions (wheel engine feed: CSPs, CCs, SGOV sweep) */}
+                        <OpenPositionsTable />
+
                         {/* Trade Table */}
                         <TradeTable
                             trades={trades}
@@ -279,6 +283,7 @@ export default function App() {
                     <PortfolioView
                         portfolioStats={portfolio.portfolioStats}
                         monthlyData={portfolio.monthlyData}
+                        deploymentData={portfolio.deploymentData}
                         darkMode={darkMode}
                         fundTransactions={portfolio.fundTransactions}
                         stocks={portfolio.stocks}
