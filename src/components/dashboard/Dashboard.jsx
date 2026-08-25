@@ -28,8 +28,8 @@ export const Dashboard = ({ stats }) => {
 
             <KpiCard
                 label="ROI"
-                value={formatPercent(stats.avgRoi)}
-                valueClassName={stats.avgRoi >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}
+                value={formatPercent(stats.totalRoi ?? stats.avgRoi)}
+                valueClassName={(stats.totalRoi ?? stats.avgRoi) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}
                 subtext={`${stats.closedTradesCount} closed trades`}
             />
 

@@ -107,6 +107,16 @@ export const useStats = (trades, accountId) => {
             ? completedTrades.reduce((acc, t) => acc + calculateMetrics(t).roi, 0) / completedTrades.length
             : 0;
 
+        // Capital-weighted ROI across all completed trades:
+        // total P/L divided by total collateral those trades tied up.
+        const closedAgg = completedTrades.reduce((acc, t) => {
+            const { pnl, collateral } = calculateMetrics(t);
+            return { pnl: acc.pnl + pnl, collateral: acc.collateral + collateral };
+        }, { pnl: 0, collateral: 0 });
+        const totalRoi = closedAgg.collateral > 0
+            ? (closedAgg.pnl / closedAgg.collateral) * 100
+            : 0;
+
         const capitalAtRisk = openTrades
             .reduce((acc, t) => acc + calculateMetrics(t).collateral, 0);
 
@@ -128,6 +138,7 @@ export const useStats = (trades, accountId) => {
             monthlyStats,
             winRate,
             avgRoi,
+            totalRoi,
             capitalAtRisk,
             openTradesCount: openTrades.length,
             completedTradesCount: completedTrades.length,
