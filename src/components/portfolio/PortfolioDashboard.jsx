@@ -53,7 +53,7 @@ export const PortfolioDashboard = ({ stats }) => {
                     icon={TrendingUp}
                     color="text-emerald-600 dark:text-emerald-400"
                     valueColor={pnlColor(stats.totalPnL)}
-                    subtext="From closed positions"
+                    subtext="Booked (cash) + stock gains"
                 />
                 <KPICard
                     label="Rate of Return"

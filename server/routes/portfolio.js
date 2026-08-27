@@ -34,12 +34,13 @@ router.get('/stats', (req, res) => {
         const interest = fundTotals.interest || 0;
         const fees = fundTotals.fee || 0;
 
-        // Options P/L from trades — only realized (exclude Open trades where closePrice is 0)
+        // Options P/L from trades — cash-basis (2026-08-27): open sell-side
+        // premiums count (closePrice defaults to 0), buy-back costs subtract.
         const optionsResult = db.prepare(`
             SELECT COALESCE(SUM(CASE WHEN type IN ('CALL', 'PUT') THEN (closePrice - entryPrice) * quantity * 100 - commission
                                      ELSE (entryPrice - closePrice) * quantity * 100 - commission END), 0) as totalPnL
             FROM trades
-            WHERE status != 'Open' ${acctAnd}
+            ${acctWhere}
         `).get(...acctParams);
         const optionsPnL = toDollars(optionsResult.totalPnL);
 
@@ -113,17 +114,26 @@ router.get('/monthly', (req, res) => {
         const acctAnd = accountId ? 'AND accountId = ?' : '';
         const acctParams = accountId ? [Number(accountId)] : [];
 
-        // Monthly options P/L (realized only)
+        // Monthly options P/L — cash-basis (2026-08-27): premium lands in the
+        // open month, buy-back cost in the close month.
+        const acctWhereM = accountId ? 'WHERE accountId = ?' : '';
         const monthlyOptions = db.prepare(`
-            SELECT
-                strftime('%Y-%m', COALESCE(closedDate, openedDate)) as month,
-                SUM(CASE WHEN type IN ('CALL', 'PUT') THEN (closePrice - entryPrice) * quantity * 100 - commission
-                         ELSE (entryPrice - closePrice) * quantity * 100 - commission END) as pnl
-            FROM trades
-            WHERE status != 'Open' ${acctAnd}
+            SELECT month, SUM(delta) as pnl FROM (
+                SELECT strftime('%Y-%m', openedDate) as month,
+                       CASE WHEN type IN ('CALL', 'PUT') THEN -entryPrice * quantity * 100 - commission
+                            ELSE entryPrice * quantity * 100 - commission END as delta
+                FROM trades
+                ${acctWhereM}
+                UNION ALL
+                SELECT strftime('%Y-%m', closedDate) as month,
+                       CASE WHEN type IN ('CALL', 'PUT') THEN closePrice * quantity * 100
+                            ELSE -closePrice * quantity * 100 END as delta
+                FROM trades
+                WHERE status != 'Open' AND closedDate IS NOT NULL ${acctAnd}
+            )
             GROUP BY month
             ORDER BY month
-        `).all(...acctParams);
+        `).all(...acctParams, ...acctParams);
 
         // Monthly stock gains (from positions + manual stocks)
         const monthlyPosGains = db.prepare(`

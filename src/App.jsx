@@ -234,7 +234,7 @@ export default function App() {
                             chartData={chartData}
                             chartPeriod={chartPeriod}
                             onPeriodChange={setChartPeriod}
-                            totalPnL={stats.totalPnL}
+                            totalPnL={stats.bookedPnL ?? stats.totalPnL}
                             darkMode={darkMode}
                         />
 

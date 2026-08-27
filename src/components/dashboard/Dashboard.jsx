@@ -12,7 +12,11 @@ const KpiCard = ({ label, value, subtext, valueClassName = '' }) => (
 );
 
 export const Dashboard = ({ stats }) => {
-    const totalPnLWithCapitalGains = stats.totalPnLWithCapitalGains ?? stats.totalPnL;
+    // Cash-basis headline (Smit's rule 2026-08-27): premium booked when cash
+    // lands, costs when paid. Finalized = closed/expired trades only.
+    const booked = stats.bookedPnL ?? stats.totalPnL;
+    const finalized = stats.finalizedPnL ?? stats.totalPnL;
+    const totalPnLWithCapitalGains = stats.bookedWithCapitalGains ?? stats.totalPnLWithCapitalGains ?? stats.totalPnL;
     const realizedCapitalGL = stats.realizedCapitalGL ?? 0;
     const closedPositions = stats.closedPositions ?? 0;
     const totalCommissions = stats.totalCommissions ?? 0;
@@ -20,10 +24,10 @@ export const Dashboard = ({ stats }) => {
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <KpiCard
-                label="Options P/L"
-                value={formatCurrency(stats.totalPremiumCollected)}
-                valueClassName={stats.totalPremiumCollected >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}
-                subtext={`${stats.closedTradesCount} closed trades`}
+                label="Booked P/L (cash)"
+                value={formatCurrency(booked)}
+                valueClassName={booked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}
+                subtext={`Finalized: ${formatCurrency(finalized)}`}
             />
 
             <KpiCard
@@ -51,7 +55,7 @@ export const Dashboard = ({ stats }) => {
                 label="Total P/L"
                 value={formatCurrency(totalPnLWithCapitalGains)}
                 valueClassName={totalPnLWithCapitalGains >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}
-                subtext={totalCommissions > 0 ? `Incl. ${formatCurrency(totalCommissions)} commissions` : 'Premiums + Stock Gains'}
+                subtext={totalCommissions > 0 ? `Incl. ${formatCurrency(totalCommissions)} commissions` : 'Booked premiums + Stock Gains'}
             />
 
             <KpiCard

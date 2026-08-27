@@ -1,8 +1,10 @@
 import React from 'react';
 import { TrendingUp } from 'lucide-react';
 import {
-    AreaChart,
+    ComposedChart,
     Area,
+    Line,
+    Legend,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -24,13 +26,18 @@ const CustomTooltip = ({ active, payload }) => {
         const data = payload[0].payload;
         return (
             <div className="bg-white dark:bg-slate-800 p-3 rounded-md shadow-sm border border-slate-200 dark:border-slate-700 text-sm">
-                <p className="font-semibold text-slate-700 dark:text-slate-200">{data.ticker}</p>
+                <p className="font-semibold text-slate-700 dark:text-slate-200">{data.tickers}</p>
                 <p className="text-slate-500 dark:text-slate-400">{formatDate(data.fullDate)}</p>
-                <p className={`font-mono font-medium ${data.tradePnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                    Trade: {formatCurrency(data.tradePnl)}
+                {data.dayBooked !== 0 && (
+                    <p className={`font-mono font-medium ${data.dayBooked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                        Day cash: {formatCurrency(data.dayBooked)}
+                    </p>
+                )}
+                <p className={`font-mono font-bold ${data.booked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    Booked (cash): {formatCurrency(data.booked)}
                 </p>
-                <p className={`font-mono font-bold ${data.pnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                    Total: {formatCurrency(data.pnl)}
+                <p className="font-mono font-medium text-slate-500 dark:text-slate-400">
+                    Finalized: {formatCurrency(data.finalized)}
                 </p>
             </div>
         );
@@ -80,7 +87,7 @@ export const PnLChart = ({
             </div>
             <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorPnl" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor={chartColor} stopOpacity={0.3} />
@@ -101,15 +108,26 @@ export const PnLChart = ({
                             tickFormatter={(value) => `$${value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value}`}
                         />
                         <Tooltip content={<CustomTooltip />} />
+                        <Legend wrapperStyle={{ fontSize: 12 }} />
                         <Area
                             type="monotone"
-                            dataKey="pnl"
+                            dataKey="booked"
+                            name="Booked (cash)"
                             stroke={chartColor}
                             strokeWidth={2}
                             fillOpacity={1}
                             fill="url(#colorPnl)"
                         />
-                    </AreaChart>
+                        <Line
+                            type="monotone"
+                            dataKey="finalized"
+                            name="Finalized"
+                            stroke={darkMode ? '#94a3b8' : '#64748b'}
+                            strokeWidth={2}
+                            strokeDasharray="6 4"
+                            dot={false}
+                        />
+                    </ComposedChart>
                 </ResponsiveContainer>
             </div>
         </div>

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { API_URL } from '../utils/constants';
 import { calculateMetrics } from '../utils/calculations';
+import { bookedPnL as computeBookedPnL, finalizedPnL as computeFinalizedPnL, tradeCashEvents, dailyCumulativeSeries } from '../utils/cashBasis';
 
 export const useStats = (trades, accountId) => {
     const [capitalGainsStats, setCapitalGainsStats] = useState({
@@ -56,23 +57,31 @@ export const useStats = (trades, accountId) => {
         const allClosedTrades = filteredTrades.filter(t => t.status !== 'Open');
         const totalPnL = allClosedTrades.reduce((acc, t) => acc + calculateMetrics(t).pnl, 0);
 
-        // Ticker stats (all closed trades)
+        // Cash-basis (Smit's rule, 2026-08-27): premium booked when cash lands,
+        // costs booked when paid. Open sell premiums count immediately; a
+        // later buy-back above premium books a negative delta that day.
+        const bookedPnL = computeBookedPnL(filteredTrades);
+        const finalizedPnL = computeFinalizedPnL(filteredTrades);
+
+        // Ticker stats, cash-basis (open premiums booked, buy-backs subtracted)
         const tickerStats = {};
-        allClosedTrades.forEach(t => {
-            const { pnl } = calculateMetrics(t);
+        filteredTrades.forEach(t => {
+            const pnl = tradeCashEvents(t).reduce((a, e) => a + e.delta, 0);
             const ticker = t.ticker.toUpperCase();
             if (!tickerStats[ticker]) tickerStats[ticker] = 0;
             tickerStats[ticker] += pnl;
         });
 
-        // Monthly stats (all closed trades)
+        // Monthly stats, cash-basis: premium lands in the open month,
+        // buy-back cost in the close month
         const monthlyStats = {};
-        allClosedTrades.forEach(t => {
-            const { pnl } = calculateMetrics(t);
-            const date = new Date(t.openedDate);
-            const monthKey = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-            if (!monthlyStats[monthKey]) monthlyStats[monthKey] = 0;
-            monthlyStats[monthKey] += pnl;
+        filteredTrades.forEach(t => {
+            tradeCashEvents(t).forEach(e => {
+                const date = new Date(e.date + 'T12:00:00Z');
+                const monthKey = date.toLocaleString('default', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+                if (!monthlyStats[monthKey]) monthlyStats[monthKey] = 0;
+                monthlyStats[monthKey] += e.delta;
+            });
         });
 
         // Chain-based win rate calculation
@@ -134,6 +143,9 @@ export const useStats = (trades, accountId) => {
 
         return {
             totalPnL,
+            bookedPnL,
+            finalizedPnL,
+            bookedWithCapitalGains: bookedPnL + capitalGainsStats.realizedCapitalGL,
             tickerStats,
             monthlyStats,
             winRate,
@@ -170,10 +182,13 @@ export const useStats = (trades, accountId) => {
         return { parentToChild, childToParent };
     }, [trades]);
 
-    // Chart data (only completed trades)
+    // Chart data: two cumulative series over the same dates —
+    //   booked (cash): premiums when received, buy-back costs when paid
+    //   finalized:     only closed/expired/assigned trades
+    // Both are cumulative over full history, then filtered to the period so
+    // period views show true levels rather than resetting to zero.
     const chartData = useMemo(() => {
-        let completedTrades = trades.filter(t => t.status !== 'Open');
-        if (completedTrades.length === 0) return [];
+        if (trades.length === 0) return [];
 
         const now = new Date();
         const periodStart = {
@@ -184,30 +199,27 @@ export const useStats = (trades, accountId) => {
             'all': new Date(0)
         }[chartPeriod];
 
-        completedTrades = completedTrades.filter(t => {
-            const tradeDate = new Date(t.closedDate || t.expirationDate || t.openedDate);
-            return tradeDate >= periodStart;
-        });
+        const fmtLabel = d => new Date(d + 'T12:00:00Z')
+            .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
-        const sortedTrades = [...completedTrades].sort((a, b) => {
-            const dateA = a.closedDate || a.expirationDate || a.openedDate;
-            const dateB = b.closedDate || b.expirationDate || b.openedDate;
-            return new Date(dateA) - new Date(dateB);
-        });
+        const series = dailyCumulativeSeries(trades);
 
-        let cumulativePnL = 0;
-        return sortedTrades.map(trade => {
-            const { pnl } = calculateMetrics(trade);
-            cumulativePnL += pnl;
-            const chartDate = trade.closedDate || trade.expirationDate || trade.openedDate;
-            return {
-                date: new Date(chartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                fullDate: chartDate,
-                pnl: cumulativePnL,
-                tradePnl: pnl,
-                ticker: trade.ticker.toUpperCase()
-            };
-        });
+        // Extend both lines to today so the chart always ends at now.
+        const todayKey = now.toISOString().slice(0, 10);
+        const lastPoint = series[series.length - 1];
+        if (lastPoint && lastPoint.fullDate < todayKey) {
+            series.push({
+                date: fmtLabel(todayKey),
+                fullDate: todayKey,
+                booked: lastPoint.booked,
+                finalized: lastPoint.finalized,
+                dayBooked: 0,
+                dayFinalized: 0,
+                tickers: 'Today'
+            });
+        }
+
+        return series.filter(p => new Date(p.fullDate + 'T12:00:00Z') >= periodStart);
     }, [trades, chartPeriod]);
 
     return {
