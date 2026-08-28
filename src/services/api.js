@@ -267,4 +267,6 @@ export const analyticsApi = {
         request(`/analytics/exposure${accountId ? `?accountId=${accountId}` : ''}`),
     getAttribution: (accountId) =>
         request(`/analytics/attribution${accountId ? `?accountId=${accountId}` : ''}`),
+    getCycles: (accountId) =>
+        request(`/analytics/cycles${accountId ? `?accountId=${accountId}` : ''}`),
 };

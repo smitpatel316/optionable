@@ -289,4 +289,89 @@ router.get('/attribution', (req, res) => {
     }
 });
 
+// ---------------- Wheel cycles ----------------
+
+// GET /api/analytics/cycles?accountId=N
+// Groups trades into wheel cycles per ticker: a CSP (and its roll chain) is a
+// cycle; after assignment, subsequent CCs attach to the same cycle until it
+// closes (final leg Closed/Expired/Assigned with no open successor).
+router.get('/cycles', (req, res) => {
+    try {
+        const accountId = req.query.accountId || null;
+        const params = [];
+        let sql = 'SELECT * FROM trades ORDER BY openedDate';
+        if (accountId) { sql = 'SELECT * FROM trades WHERE accountId = ? ORDER BY openedDate'; params.push(accountId); }
+        const all = db.prepare(sql).all(...params);
+
+        // Link roll chains: map parent -> children; a chain's root is the CSP.
+        const byId = new Map(all.map((t) => [t.id, t]));
+        const chainOf = (t) => {
+            let root = t;
+            const seen = new Set();
+            while (root.parentTradeId && byId.has(root.parentTradeId) && !seen.has(root.id)) {
+                seen.add(root.id);
+                root = byId.get(root.parentTradeId);
+            }
+            return root.id;
+        };
+
+        const derLegPnl = (t) => { // same formula/units as stats.js
+            // only terminal/rolled legs realize P/L (Open rows carry closePrice 0)
+            if (t.status === 'Open') return null;
+            if (t.closePrice == null) return null;
+            const isShort = t.type === 'CSP' || t.type === 'CC';
+            const diff = isShort ? t.entryPrice - t.closePrice : t.closePrice - t.entryPrice;
+            return (diff * t.quantity * 100 - (t.commission || 0)) / 100;
+        };
+
+        const cycles = new Map(); // root trade id -> cycle accumulator
+        for (const t of all) {
+            if (t.type !== 'CSP' && t.type !== 'CC') continue;
+            const rootId = chainOf(t);
+            const cyc = cycles.get(rootId) || { ticker: t.type === 'CSP' ? t.ticker : t.ticker, legs: [], rootType: byId.get(rootId)?.type || t.type, start: null, closed: false, lastDate: null };
+            cyc.ticker = t.ticker;
+            cyc.legs.push(t);
+            const d = t.openedDate || t.createdAt;
+            if (!cyc.start || d < cyc.start) cyc.start = d;
+            const end = t.closedDate || null;
+            if (end && (!cyc.lastDate || end > cyc.lastDate)) cyc.lastDate = end;
+            cycles.set(rootId, cyc);
+        }
+
+        const now = new Date().toISOString().slice(0, 10);
+        const list = [...cycles.values()].map((c) => {
+            const root = byId.get(c.rootId ?? c.legs[0].id);
+            const realized = c.legs.reduce((s, t) => s + (derLegPnl(t) || 0), 0);
+            const openLegs = c.legs.filter((t) => t.status === 'Open');
+            const isOpen = openLegs.length > 0;
+            const collateral = openLegs[0] ? (openLegs[0].strike / 100) * 100 * openLegs[0].quantity
+                : Math.max(...c.legs.map((t) => (t.strike / 100) * 100 * t.quantity));
+            const endDate = isOpen ? now : c.lastDate;
+            const daysHeld = Math.max(0, Math.round((new Date(endDate) - new Date(c.start)) / 86400000));
+            const roi = collateral ? (realized / collateral) * 100 : null;
+            const apy = roi != null && daysHeld > 0 ? roi * (365 / daysHeld) : null;
+            const rollCount = c.legs.filter((t) => t.status === 'Rolled').length;
+            return {
+                ticker: c.ticker,
+                style: root?.type === 'CC' ? 'CC' : 'CSP',
+                status: isOpen ? 'Open' : 'Closed',
+                legs: c.legs.length,
+                rolls: rollCount,
+                realized: Math.round(realized * 100) / 100,
+                collateral: Math.round(collateral * 100) / 100,
+                daysHeld,
+                roiPct: roi != null ? Math.round(roi * 100) / 100 : null,
+                apyPct: apy != null ? Math.round(apy * 100) / 100 : null,
+                start: c.start,
+                end: isOpen ? null : c.lastDate,
+            };
+        }).sort((a, b) => (b.terminalRealized ?? b.realized) - (a.terminalRealized ?? a.realized));
+
+        res.json({ success: true, data: { cycles: list } });
+    } catch (error) {
+        console.error('Analytics cycles failed:', error);
+        res.status(500).json({ success: false, error: 'Failed to compute wheel cycles' });
+    }
+});
+
 export default router;
