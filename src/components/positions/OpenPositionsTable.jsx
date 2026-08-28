@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, AlertTriangle, X } from 'lucide-react';
 import { API_URL } from '../../utils/constants';
 import { formatCurrency } from '../../utils/formatters';
 import { PayoffModal } from '../analytics/PayoffModal';
@@ -132,6 +132,9 @@ export const OpenPositionsTable = () => {
     const [data, setData] = useState(null);
     const [failed, setFailed] = useState(false);
     const [payoffPosition, setPayoffPosition] = useState(null);
+    const [dismissedKey, setDismissedKey] = useState(() => {
+        try { return localStorage.getItem('opt-expiring-dismiss'); } catch { return null; }
+    });
 
     const fetchData = useCallback(async () => {
         try {
@@ -157,6 +160,17 @@ export const OpenPositionsTable = () => {
     const queue = Array.isArray(data?.fundingQueue) ? data.fundingQueue : [];
     const asOf = fmtAsOf(data?.updatedAt);
 
+    // Expiring-soon strip: server pre-filters legs with DTE <= 7. The dismiss
+    // is keyed on the exact set + DTEs, so it reappears when the set changes
+    // (new position, or a day ticks by) rather than staying hidden forever.
+    const expiring = Array.isArray(data?.expiringSoon) ? data.expiringSoon : [];
+    const expiringKey = expiring.length ? expiring.map((e) => `${e.underlying}|${e.strike}|${e.expiry}|${e.dte}`).sort().join(';') : null;
+    const showExpiring = expiringKey && dismissedKey !== expiringKey;
+    const dismissExpiring = () => {
+        setDismissedKey(expiringKey);
+        try { localStorage.setItem('opt-expiring-dismiss', expiringKey); } catch { /* private mode */ }
+    };
+
     return (
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-slate-50/50 dark:bg-slate-800/50">
@@ -165,6 +179,19 @@ export const OpenPositionsTable = () => {
                     <span className="text-xs text-slate-400 dark:text-slate-500">as of {asOf}</span>
                 )}
             </div>
+
+            {showExpiring && (
+                <div className="px-4 py-2 border-b border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-900/20 flex items-center gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <div className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+                        Expiring ≤7d: {expiring.map((e) => `${e.underlying} ${fmtStrike(e.strike, e.type === 'CSP' ? 'P' : 'C')}${e.expiry ? ` ${fmtExpiry(e.expiry)}` : ''} (${e.dte}d)`).join(' · ')}
+                    </div>
+                    <button onClick={dismissExpiring} aria-label="Dismiss expiring notice"
+                        className="ml-auto text-amber-500 hover:text-amber-700 dark:hover:text-amber-200 p-0.5 rounded">
+                        <X className="w-3.5 h-3.5" />
+                    </button>
+                </div>
+            )}
 
             {queue.length > 0 && (
                 <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-700 space-y-0.5">

@@ -85,12 +85,19 @@ router.post('/dashboard', (req, res) => {
 router.get('/dashboard', (req, res) => {
     try {
         const rows = db.prepare('SELECT key, payload, updated_at FROM engine_dashboard').all();
-        const out = { snapshot: null, scanRun: null, positions: null, fundingQueue: null, updatedAt: null };
+        const out = { snapshot: null, scanRun: null, positions: null, fundingQueue: null, expiringSoon: [], updatedAt: null };
         for (const row of rows) {
             try { out[row.key] = JSON.parse(row.payload); } catch { out[row.key] = null; }
             if (!out.updatedAt || row.updated_at > out.updatedAt) out.updatedAt = row.updated_at;
         }
-        if (Array.isArray(out.positions)) out.positions = out.positions.map(enrichBreakEven);
+        if (Array.isArray(out.positions)) {
+            out.positions = out.positions.map(enrichBreakEven);
+            // Expiring-soon strip: option legs a week out (the DTE window the
+            // wheel treats as the roll/let-ride decision zone).
+            out.expiringSoon = out.positions
+                .filter((p) => p && (p.type === 'CSP' || p.type === 'CC') && p.dte != null && Number(p.dte) <= 7)
+                .map((p) => ({ symbol: p.symbol, underlying: p.underlying, strike: p.strike, type: p.type, expiry: p.expiry, dte: p.dte }));
+        }
         apiResponse.success(res, out);
     } catch (error) {
         console.error('Engine dashboard read failed:', error);
