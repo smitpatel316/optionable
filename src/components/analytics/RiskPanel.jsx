@@ -37,7 +37,7 @@ export const RiskPanel = ({ risk }) => {
                 <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Portfolio Risk &amp; Greeks</h3>
                 <span className="text-xs text-slate-400">{risk.openCount} open · {risk.source === 'engine-push' ? asOf : 'no engine push yet — entry snapshot'}</span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 <Card
                     label="Net Δ"
                     value={risk.netDelta != null ? `${risk.netDelta > 0 ? '+' : ''}${risk.netDelta.toFixed(1)}` : '—'}
@@ -64,13 +64,6 @@ export const RiskPanel = ({ risk }) => {
                     value={risk.unrealizedPL != null ? fmtSigned(risk.unrealizedPL) : '—'}
                     valueClassName={risk.unrealizedPL != null ? plClass(risk.unrealizedPL) : ''}
                     subtext={risk.itmCount ? `${risk.itmCount} position${risk.itmCount !== 1 ? 's' : ''} ITM` : 'all OTM at last mark'}
-                />
-                <Card
-                    label="Collateral at risk"
-                    value={formatCurrency(risk.collateralAtRisk)}
-                    valueClassName="text-slate-700 dark:text-slate-200"
-                    subtext={`max loss: ${formatCurrency(risk.maxLoss)}`}
-                    title="CSP worst case assumes assigned stock goes to zero."
                 />
                 <Card
                     label="Next expiry"
