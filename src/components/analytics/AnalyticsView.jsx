@@ -5,6 +5,7 @@ import { ExposureLadder } from './ExposureLadder';
 import { AttributionPanel } from './AttributionPanel';
 import { QualityPanel } from './QualityPanel';
 import { CyclesPanel } from './CyclesPanel';
+import { TimelinePanel } from './TimelinePanel';
 
 // Analytics tab (fork addition 2026-08-28): advanced views derived server-side
 // from the trades table + engine-pushed positions blob. Fetches on mount and
@@ -58,6 +59,7 @@ export const AnalyticsView = ({ accountId }) => {
             <QualityPanel quality={quality} />
             <AttributionPanel attribution={attribution} />
             <CyclesPanel cycles={cycles} />
+            <TimelinePanel accountId={accountId} />
         </div>
     );
 };
