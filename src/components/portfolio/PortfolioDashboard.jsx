@@ -1,5 +1,7 @@
 import React from 'react';
 import { Landmark, TrendingUp, Percent, BarChart3, Coins, PieChart } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { pnlTone } from '@/lib/pnl';
 
 const formatCurrency = (value) => {
     if (value === null || value === undefined) return '$0.00';
@@ -9,7 +11,7 @@ const formatCurrency = (value) => {
 };
 
 const KPICard = ({ label, value, icon: Icon, color, subtext, valueColor }) => (
-    <div className="bg-card p-5 rounded-lg shadow-sm border border-border">
+    <Card className="p-5">
         <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-muted-foreground">{label}</p>
             <Icon className={`w-5 h-5 ${color}`} />
@@ -18,15 +20,10 @@ const KPICard = ({ label, value, icon: Icon, color, subtext, valueColor }) => (
             {value}
         </p>
         {subtext && <p className="text-xs text-muted-foreground mt-1">{subtext}</p>}
-    </div>
+    </Card>
 );
 
-const pnlColor = (val) => {
-    const num = Number(val);
-    if (num > 0) return 'text-emerald-600 dark:text-emerald-400';
-    if (num < 0) return 'text-rose-600 dark:text-rose-400';
-    return 'text-foreground';
-};
+const pnlColor = pnlTone;
 
 export const PortfolioDashboard = ({ stats }) => {
     if (!stats) return null;
@@ -36,7 +33,7 @@ export const PortfolioDashboard = ({ stats }) => {
     return (
         <div>
             <div className="flex items-center gap-2 mb-4">
-                <PieChart className="w-5 h-5 text-indigo-500" />
+                <PieChart className="w-5 h-5 text-muted-foreground" />
                 <h2 className="text-lg font-bold text-foreground">Portfolio</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -51,7 +48,7 @@ export const PortfolioDashboard = ({ stats }) => {
                     label="Total P/L"
                     value={formatCurrency(stats.totalPnL)}
                     icon={TrendingUp}
-                    color="text-emerald-600 dark:text-emerald-400"
+                    color="text-muted-foreground"
                     valueColor={pnlColor(stats.totalPnL)}
                     subtext="Booked (cash) + stock gains"
                 />
@@ -59,7 +56,7 @@ export const PortfolioDashboard = ({ stats }) => {
                     label="Rate of Return"
                     value={`${(stats.rateOfReturn || 0).toFixed(1)}%`}
                     icon={Percent}
-                    color="text-foreground"
+                    color="text-muted-foreground"
                     valueColor={pnlColor(stats.rateOfReturn)}
                     subtext="Based on realized P/L"
                 />
@@ -67,7 +64,7 @@ export const PortfolioDashboard = ({ stats }) => {
                     label="Options P/L"
                     value={formatCurrency(stats.optionsPnL)}
                     icon={BarChart3}
-                    color="text-blue-600 dark:text-blue-400"
+                    color="text-muted-foreground"
                     valueColor={pnlColor(stats.optionsPnL)}
                     subtext={`${stats.closedTradesCount || 0} closed trades`}
                 />
@@ -83,7 +80,7 @@ export const PortfolioDashboard = ({ stats }) => {
                     label="Income"
                     value={formatCurrency(income)}
                     icon={Coins}
-                    color="text-foreground"
+                    color="text-muted-foreground"
                     subtext={[
                         stats.dividends > 0 ? `${formatCurrency(stats.dividends)} div` : null,
                         stats.interest > 0 ? `${formatCurrency(stats.interest)} int` : null,

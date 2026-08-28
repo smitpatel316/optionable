@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Edit2, Trash2, ArrowRightLeft, ChevronDown, ChevronRight, RefreshCw, TrendingUp, TrendingDown, Briefcase } from 'lucide-react';
 import { StockModal } from './StockModal';
+import { Card } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { pnlTone } from '@/lib/pnl';
+import { cn } from '@/lib/utils';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -126,7 +131,7 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
     };
 
     return (
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+        <Card className="overflow-hidden">
             {/* Header - matches TradeTable style */}
             <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/50">
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -135,15 +140,15 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                 </h3>
                 <div className="flex items-center gap-3">
                     {/* Status Filter Tabs */}
-                    <div className="flex bg-muted rounded-lg p-0.5">
+                    <div className="flex bg-muted rounded-md p-1 gap-0.5">
                         {STATUS_TABS.map(tab => (
                             <button
                                 key={tab.key}
                                 onClick={() => { setFilter(tab.key); setExpandedTicker(null); }}
                                 className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                                     filter === tab.key
-                                        ? 'bg-card dark:bg-secondary text-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground'
+                                        ? 'bg-background text-foreground shadow'
+                                        : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
                                 {tab.label}
@@ -154,7 +159,7 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                         <button
                             onClick={fetchPrices}
                             disabled={refreshing}
-                            className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground hover:bg-accent dark:hover:bg-accent rounded transition-colors"
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
                         >
                             <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
                             Prices
@@ -163,43 +168,43 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                     <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded">
                         {aggregated.length} tickers · {filteredStocks.length} lots
                     </span>
-                    <button
+                    <Button
+                        size="sm"
                         onClick={() => { setEditingStock(null); setIsSelling(false); setShowModal(true); }}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
                         title="Buy stock"
                     >
                         <Plus className="w-4 h-4" />
                         Buy Stock
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             {/* Table */}
             <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                    <thead className="text-xs text-muted-foreground uppercase bg-muted border-b border-border">
-                        <tr>
-                            <th className="px-3 py-2 font-semibold w-8"></th>
-                            <th className="px-3 py-2 font-semibold">Ticker</th>
-                            <th className="px-3 py-2 font-semibold text-right">Shares</th>
-                            <th className="px-3 py-2 font-semibold text-right">Avg Cost</th>
+                <Table className="min-w-[640px]">
+                    <TableHeader className="bg-muted/50">
+                        <TableRow className="hover:bg-muted/50">
+                            <TableHead className=" w-8"></TableHead>
+                            <TableHead className="">Ticker</TableHead>
+                            <TableHead className="text-right">Shares</TableHead>
+                            <TableHead className="text-right">Avg Cost</TableHead>
                             {filter !== 'closed' && (
-                                <th className="px-3 py-2 font-semibold text-right">Current</th>
+                                <TableHead className="text-right">Current</TableHead>
                             )}
-                            <th className="px-3 py-2 font-semibold text-right">P/L</th>
-                            <th className="px-3 py-2 font-semibold text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
+                            <TableHead className="text-right">P/L</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
                         {aggregated.length === 0 ? (
-                            <tr>
-                                <td colSpan={filter !== 'closed' ? 7 : 6} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                            <TableRow>
+                                <TableCell colSpan={filter !== 'closed' ? 7 : 6} className="py-12 text-center text-sm text-muted-foreground">
                                     {stocks.length === 0
                                         ? 'No stock positions yet. Click "Buy Stock" to track manual purchases.'
                                         : `No ${filter !== 'all' ? filter : ''} stock positions.`
                                     }
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         ) : (
                             aggregated.map(group => {
                                 const isExpanded = expandedTicker === group.ticker;
@@ -212,11 +217,11 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                                 return (
                                     <React.Fragment key={group.ticker}>
                                         {/* Aggregated ticker row */}
-                                        <tr
-                                            className={`hover:bg-accent/80 dark:hover:bg-accent/50 transition-colors ${group.lots.length > 1 ? 'cursor-pointer' : ''}`}
+                                        <TableRow
+                                            className={group.lots.length > 1 ? 'cursor-pointer' : undefined}
                                             onClick={() => group.lots.length > 1 && setExpandedTicker(isExpanded ? null : group.ticker)}
                                         >
-                                            <td className="px-3 py-2 text-muted-foreground">
+                                            <TableCell className="text-muted-foreground">
                                                 {group.lots.length > 1 ? (
                                                     isExpanded
                                                         ? <ChevronDown className="w-4 h-4" />
@@ -224,48 +229,48 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                                                 ) : (
                                                     <ChevronRight className="w-4 h-4 text-transparent" />
                                                 )}
-                                            </td>
-                                            <td className="px-3 py-2">
+                                            </TableCell>
+                                            <TableCell>
                                                 <span className="font-medium text-foreground">{group.ticker}</span>
                                                 {group.lots.length > 1 && (
                                                     <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground rounded">
                                                         {group.lots.length} lots
                                                     </span>
                                                 )}
-                                            </td>
-                                            <td className="px-3 py-2 text-right font-mono text-foreground">
+                                            </TableCell>
+                                            <TableCell className="text-right font-mono text-foreground">
                                                 {group.totalShares}
-                                            </td>
-                                            <td className="px-3 py-2 text-right font-mono text-foreground">
+                                            </TableCell>
+                                            <TableCell className="text-right font-mono text-foreground">
                                                 {formatCurrency(group.avgCostBasis)}
-                                            </td>
+                                            </TableCell>
                                             {filter !== 'closed' && (
-                                                <td className="px-3 py-2 text-right font-mono">
+                                                <TableCell className="text-right font-mono">
                                                     {currentPrice ? (
                                                         <span className="text-foreground">{formatCurrency(currentPrice)}</span>
                                                     ) : (
                                                         <span className="text-muted-foreground dark:text-muted-foreground">—</span>
                                                     )}
-                                                </td>
+                                                </TableCell>
                                             )}
-                                            <td className="px-3 py-2 text-right">
+                                            <TableCell className="text-right">
                                                 {displayPL !== null ? (
-                                                    <span className={`font-mono font-medium inline-flex items-center gap-1 ${displayPL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                                    <span className={`font-mono font-medium inline-flex items-center gap-1 ${pnlTone(displayPL)}`}>
                                                         {displayPL >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                                                         {formatCurrency(displayPL)}
                                                     </span>
                                                 ) : (
                                                     <span className="text-muted-foreground dark:text-muted-foreground">—</span>
                                                 )}
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
+                                            </TableCell>
+                                            <TableCell className="text-right">
                                                 {/* Actions for single-lot tickers (show inline) */}
                                                 {group.lots.length === 1 && (
                                                     <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                                                         {!group.isClosed && (
                                                             <button
                                                                 onClick={() => { setEditingStock(group.lots[0]); setIsSelling(true); setShowModal(true); }}
-                                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground dark:hover:text-amber-400 hover:bg-muted dark:hover:bg-amber-900/30 rounded transition-colors"
+                                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                                                                 title="Sell shares"
                                                             >
                                                                 <ArrowRightLeft className="w-3.5 h-3.5" />
@@ -282,7 +287,7 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                                                         </button>
                                                         <button
                                                             onClick={() => handleDelete(group.lots[0].id)}
-                                                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-rose-600 dark:hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
+                                                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors"
                                                             title="Delete this stock"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
@@ -290,8 +295,8 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                                                         </button>
                                                     </div>
                                                 )}
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
 
                                         {/* Expanded lot details */}
                                         {isExpanded && group.lots.map(lot => {
@@ -300,9 +305,9 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                                                 : (currentPrice ? (currentPrice - lot.costBasis) * lot.shares : null);
 
                                             return (
-                                                <tr key={lot.id} className="bg-muted/50 dark:bg-secondary/30 hover:bg-accent/50 dark:hover:bg-accent/50 transition-colors">
-                                                    <td className="px-3 py-2"></td>
-                                                    <td className="px-3 py-2">
+                                                <TableRow key={lot.id} className="bg-muted/40">
+                                                    <TableCell></TableCell>
+                                                    <TableCell>
                                                         <div className="flex items-center gap-1 pl-4">
                                                             <span className="text-muted-foreground dark:text-muted-foreground mr-1">└</span>
                                                             <span className="text-xs text-muted-foreground">
@@ -319,34 +324,34 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                                                                 </span>
                                                             )}
                                                         </div>
-                                                    </td>
-                                                    <td className="px-3 py-2 text-right text-xs font-mono text-muted-foreground">
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-xs font-mono text-muted-foreground">
                                                         {lot.shares}
-                                                    </td>
-                                                    <td className="px-3 py-2 text-right text-xs font-mono text-muted-foreground">
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-xs font-mono text-muted-foreground">
                                                         {formatCurrency(lot.costBasis)}
-                                                    </td>
+                                                    </TableCell>
                                                     {filter !== 'closed' && (
-                                                        <td className="px-3 py-2 text-right text-xs font-mono text-muted-foreground">
+                                                        <TableCell className="text-right text-xs font-mono text-muted-foreground">
                                                             {lot.soldDate && lot.salePrice !== null
                                                                 ? formatCurrency(lot.salePrice)
                                                                 : ''
                                                             }
-                                                        </td>
+                                                        </TableCell>
                                                     )}
-                                                    <td className="px-3 py-2 text-right">
+                                                    <TableCell className="text-right">
                                                         {lotPL !== null && (
-                                                            <span className={`text-xs font-mono font-medium ${lotPL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                                            <span className={`text-xs font-mono font-medium ${pnlTone(lotPL)}`}>
                                                                 {formatCurrency(lotPL)}
                                                             </span>
                                                         )}
-                                                    </td>
-                                                    <td className="px-3 py-2 text-right">
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
                                                         <div className="flex justify-end gap-1">
                                                             {!lot.soldDate && (
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); setEditingStock(lot); setIsSelling(true); setShowModal(true); }}
-                                                                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground dark:hover:text-amber-400 hover:bg-muted dark:hover:bg-amber-900/30 rounded transition-colors"
+                                                                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                                                                     title="Sell shares"
                                                                 >
                                                                     <ArrowRightLeft className="w-3.5 h-3.5" />
@@ -363,23 +368,23 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                                                             </button>
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); handleDelete(lot.id); }}
-                                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-rose-600 dark:hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
+                                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors"
                                                                 title="Delete this lot"
                                                             >
                                                                 <Trash2 className="w-3.5 h-3.5" />
                                                                 <span>Delete</span>
                                                             </button>
                                                         </div>
-                                                    </td>
-                                                </tr>
+                                                    </TableCell>
+                                                </TableRow>
                                             );
                                         })}
                                     </React.Fragment>
                                 );
                             })
                         )}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
             </div>
 
             <StockModal
@@ -391,6 +396,6 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                 accounts={accounts}
                 selectedAccountId={selectedAccountId}
             />
-        </div>
+        </Card>
     );
 };

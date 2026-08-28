@@ -10,6 +10,7 @@ import {
     ResponsiveContainer,
     Legend
 } from 'recharts';
+import { Card, CardContent } from '@/components/ui/card';
 
 const formatCurrency = (value) => {
     const abs = Math.abs(value);
@@ -26,17 +27,17 @@ const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         const day = payload[0].payload;
         return (
-            <div className="bg-card p-3 rounded-md shadow-sm border border-border text-sm">
+            <div className="bg-popover p-3 rounded-md shadow-md border border-border text-sm text-popover-foreground">
                 <p className="font-semibold text-foreground mb-1">{label}</p>
                 <p className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#10b981' }} />
+                    <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: 'hsl(var(--foreground))' }} />
                     <span className="text-muted-foreground">Deployed:</span>
                     <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
                         ${day.deployed.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </span>
                 </p>
                 <p className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#94a3b8' }} />
+                    <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: 'hsl(var(--muted-foreground))' }} />
                     <span className="text-muted-foreground">Idle (cash + SGOV):</span>
                     <span className="font-mono font-medium text-muted-foreground">
                         ${day.idle.toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -57,11 +58,10 @@ export const CapitalDeploymentChart = ({ data, darkMode }) => {
     if (!data || data.length === 0) return null;
 
     const latest = data[data.length - 1];
-    const gridColor = darkMode ? '#334155' : '#e2e8f0';
-    const tickColor = darkMode ? '#94a3b8' : '#64748b';
 
     return (
-        <div className="bg-card rounded-lg shadow-sm border border-border p-5">
+        <Card>
+            <CardContent className="p-4 md:p-5">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <Gauge className="w-4 h-4 text-muted-foreground" />
@@ -70,7 +70,7 @@ export const CapitalDeploymentChart = ({ data, darkMode }) => {
                     </h3>
                 </div>
                 <div className="text-right">
-                    <span className={`text-lg font-bold font-mono ${latest.pct >= 50 ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
+                    <span className="text-lg font-bold font-mono text-foreground">
                         {latest.pct}%
                     </span>
                     <span className="text-xs text-muted-foreground ml-1.5">deployed</span>
@@ -78,17 +78,17 @@ export const CapitalDeploymentChart = ({ data, darkMode }) => {
             </div>
             <ResponsiveContainer width="100%" height={240}>
                 <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis
                         dataKey="date"
                         tickFormatter={formatDate}
-                        tick={{ fontSize: 11, fill: tickColor }}
-                        stroke={gridColor}
+                        tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                        stroke="hsl(var(--border))"
                     />
                     <YAxis
                         tickFormatter={formatCurrency}
-                        tick={{ fontSize: 11, fill: tickColor }}
-                        stroke={gridColor}
+                        tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                        stroke="hsl(var(--border))"
                         width={55}
                     />
                     <Tooltip content={<CustomTooltip />} />
@@ -98,24 +98,25 @@ export const CapitalDeploymentChart = ({ data, darkMode }) => {
                         dataKey="deployed"
                         name="Deployed (securing CSPs/CCs)"
                         stackId="1"
-                        stroke="#10b981"
-                        fill="#10b981"
-                        fillOpacity={0.75}
+                        stroke="hsl(var(--foreground))"
+                        fill="hsl(var(--foreground))"
+                        fillOpacity={0.55}
                     />
                     <Area
                         type="monotone"
                         dataKey="idle"
                         name="Idle (cash + SGOV)"
                         stackId="1"
-                        stroke="#94a3b8"
-                        fill="#94a3b8"
-                        fillOpacity={0.35}
+                        stroke="hsl(var(--muted-foreground))"
+                        fill="hsl(var(--muted-foreground))"
+                        fillOpacity={0.3}
                     />
                 </AreaChart>
             </ResponsiveContainer>
             <p className="text-xs text-muted-foreground mt-2">
                 Deployed = capital securing open puts/calls plus stock held from assignments. Idle cash sits in SGOV earning yield until a trade needs it.
             </p>
-        </div>
+            </CardContent>
+        </Card>
     );
 };

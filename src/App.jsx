@@ -193,7 +193,7 @@ export default function App() {
                 {error && (
                     <div className="bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 px-4 py-3 rounded-lg flex items-center justify-between">
                         <span>{error}</span>
-                        <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-600 dark:hover:text-red-300">
+                        <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-600 dark:hover:text-rose-300">
                             <X className="w-4 h-4" />
                         </button>
                     </div>

@@ -17,13 +17,17 @@ import {
 } from 'lucide-react';
 import { formatDateShort, formatCurrency, formatPercent } from '../../utils/formatters';
 import { calculateDTE, calculateMetrics } from '../../utils/calculations';
+import { Card } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { pnlTone } from '@/lib/pnl';
+import { cn } from '@/lib/utils';
 
-const TYPE_BADGE_CLASSES = {
-    CSP: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400',
-    CC: 'bg-muted text-muted-foreground',
-    CALL: 'bg-success/15 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400',
-    PUT: 'bg-muted text-muted-foreground',
-};
+// Monochrome type badges: hue carries P/L only. Filled = put, outline = call,
+// muted for non-wheel long options.
+const TYPE_BADGE_VARIANTS = { CSP: 'secondary', CC: 'outline', CALL: 'muted', PUT: 'muted' };
 
 const STATUS_TABS = [
     { key: 'all', label: 'All' },
@@ -289,7 +293,7 @@ export const TradeTable = ({
     };
 
     return (
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+        <Card className="overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/50">
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -298,15 +302,15 @@ export const TradeTable = ({
                 </h3>
                 <div className="flex items-center gap-3">
                     {/* Status Filter Tabs */}
-                    <div className="flex bg-muted rounded-lg p-0.5">
+                    <div className="flex bg-muted rounded-md p-1 gap-0.5">
                         {STATUS_TABS.map(tab => (
                             <button
                                 key={tab.key}
                                 onClick={() => { setStatusFilter(tab.key); setCurrentPage(1); }}
                                 className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                                     statusFilter === tab.key
-                                        ? 'bg-card dark:bg-secondary text-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground'
+                                        ? 'bg-background text-foreground shadow'
+                                        : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
                                 {tab.label}
@@ -331,53 +335,53 @@ export const TradeTable = ({
 
             {/* Table */}
             <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left [&_th]:border-r [&_th]:border-border [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-border [&_td:last-child]:border-r-0 dark:[&_th]:border-slate-600 dark:[&_td]:border-slate-700">
-                    <thead className="text-xs text-muted-foreground uppercase bg-muted border-b border-border">
-                        <tr>
-                            <th className="px-3 py-2 w-[12%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('ticker')}>
+                <Table className="min-w-[960px]">
+                    <TableHeader className="bg-muted/50">
+                        <TableRow className="hover:bg-muted/50">
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('ticker')}>
                                 <span className="inline-flex items-center gap-1 justify-center"><span className="p-0.5"><ChevronRight className="w-4 h-4 text-transparent" /></span>Ticker {getSortIcon('ticker')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[5%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('type')}>
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('type')}>
                                 <span className="inline-flex items-center gap-1 justify-center">Type {getSortIcon('type')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[7%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('strike')}>
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('strike')}>
                                 <span className="inline-flex items-center gap-1 justify-center">Strike {getSortIcon('strike')}</span>
-                            </th>
-                            {livePricesEnabled && <th className="px-3 py-2 w-[7%] font-semibold text-center">Price</th>}
-                            <th className="px-3 py-2 w-[5%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('quantity')}>
+                            </TableHead>
+                            {livePricesEnabled && <TableHead className="text-center">Price</TableHead>}
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('quantity')}>
                                 <span className="inline-flex items-center gap-1 justify-center">Qty {getSortIcon('quantity')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[6%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('delta')}>
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('delta')}>
                                 <span className="inline-flex items-center gap-1 justify-center">Delta {getSortIcon('delta')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[8%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('openedDate')}>
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('openedDate')}>
                                 <span className="inline-flex items-center gap-1 justify-center">Opened {getSortIcon('openedDate')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[8%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('expirationDate')}>
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('expirationDate')}>
                                 <span className="inline-flex items-center gap-1 justify-center">Expiry {getSortIcon('expirationDate')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[5%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('dte')}>
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('dte')}>
                                 <span className="inline-flex items-center gap-1 justify-center">DTE {getSortIcon('dte')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[9%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('pnl')}>
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('pnl')}>
                                 <span className="inline-flex items-center gap-1 justify-center">P/L {getSortIcon('pnl')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[7%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('roi')}>
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('roi')}>
                                 <span className="inline-flex items-center gap-1 justify-center">ROI {getSortIcon('roi')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[8%] font-semibold text-center cursor-pointer hover:text-foreground dark:hover:text-muted-foreground" onClick={() => handleSort('status')}>
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => handleSort('status')}>
                                 <span className="inline-flex items-center gap-1 justify-center">Status {getSortIcon('status')}</span>
-                            </th>
-                            <th className="px-3 py-2 w-[13%] font-semibold text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
+                            </TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
                         {paginatedChains.length === 0 ? (
-                            <tr>
-                                <td colSpan={livePricesEnabled ? 13 : 12} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                            <TableRow>
+                                <TableCell colSpan={livePricesEnabled ? 13 : 12} className="py-12 text-center text-sm text-muted-foreground">
                                     {trades.length === 0 ? "No trades yet. Click \"New Trade\" to start your wheel." : "No trades match the current filter."}
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         ) : (
                             paginatedChains.map((chain) => {
                                 const isExpanded = expandedChains.has(chain.id);
@@ -388,8 +392,8 @@ export const TradeTable = ({
                                 return (
                                     <React.Fragment key={chain.id}>
                                         {/* Root/Main Trade Row */}
-                                        <tr className={`hover:bg-accent/80 dark:hover:bg-accent/50 transition-colors ${chain.isMultiTrade ? 'bg-slate-25 dark:bg-card/80' : ''}`}>
-                                            <td className="px-3 py-2 text-center text-sm text-foreground">
+                                        <TableRow className={chain.isMultiTrade ? 'bg-muted/30' : undefined}>
+                                            <TableCell className="text-center text-sm text-foreground">
                                                 <div className="flex items-center justify-center gap-1">
                                                     <button
                                                         onClick={() => chain.isMultiTrade && toggleChain(chain.id)}
@@ -408,18 +412,16 @@ export const TradeTable = ({
                                                     </button>
                                                     <span className="font-medium">{rootTrade.ticker.toUpperCase()}</span>
                                                     {chain.isMultiTrade && (
-                                                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-muted dark:bg-amber-900/40 text-foreground rounded">
+                                                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-muted text-foreground rounded">
                                                             {chain.trades.length}
                                                         </span>
                                                     )}
                                                 </div>
-                                            </td>
-                                            <td className="px-3 py-2 text-center">
-                                                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${TYPE_BADGE_CLASSES[rootTrade.type] || TYPE_BADGE_CLASSES.CSP}`}>
-                                                    {rootTrade.type}
-                                                </span>
-                                            </td>
-                                            <td className="px-3 py-2 text-center font-mono text-sm text-muted-foreground">${rootTrade.strike}</td>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Badge variant={TYPE_BADGE_VARIANTS[rootTrade.type] || 'secondary'} className="font-semibold">{rootTrade.type}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-center font-mono text-sm text-muted-foreground">${rootTrade.strike}</TableCell>
                                             {livePricesEnabled && (() => {
                                                 const isBuyType = rootTrade.type === 'CALL' || rootTrade.type === 'PUT';
                                                 if (rootTrade.status === 'Open') {
@@ -431,7 +433,7 @@ export const TradeTable = ({
                                                         ? optPrice >= rootTrade.entryPrice
                                                         : optPrice <= rootTrade.entryPrice);
                                                     return (
-                                                        <td className={`px-3 py-2 text-center font-mono text-sm font-medium ${
+                                                        <TableCell className={`text-center font-mono text-sm font-medium ${
                                                             optPrice != null
                                                                 ? isProfit
                                                                     ? 'text-emerald-600 dark:text-emerald-400'
@@ -439,13 +441,13 @@ export const TradeTable = ({
                                                                 : 'text-muted-foreground'
                                                         }`}>
                                                             {optPrice != null ? `$${optPrice.toFixed(2)}` : '—'}
-                                                        </td>
+                                                        </TableCell>
                                                     );
                                                 }
                                                 // Closed trades: show stock price
                                                 const price = prices[rootTrade.ticker.toUpperCase()]?.price;
                                                 return (
-                                                    <td className={`px-3 py-2 text-center font-mono text-sm font-medium ${
+                                                    <TableCell className={`text-center font-mono text-sm font-medium ${
                                                         price != null
                                                             ? price >= rootTrade.strike
                                                                 ? 'text-emerald-600 dark:text-emerald-400'
@@ -453,23 +455,23 @@ export const TradeTable = ({
                                                             : 'text-muted-foreground'
                                                     }`}>
                                                         {price != null ? `$${price.toFixed(2)}` : '—'}
-                                                    </td>
+                                                    </TableCell>
                                                 );
                                             })()}
-                                            <td className="px-3 py-2 text-center font-mono text-sm text-muted-foreground">{rootTrade.quantity}</td>
-                                            <td className="px-3 py-2 text-center font-mono text-sm text-muted-foreground">
+                                            <TableCell className="text-center font-mono text-sm text-muted-foreground">{rootTrade.quantity}</TableCell>
+                                            <TableCell className="text-center font-mono text-sm text-muted-foreground">
                                                 {rootTrade.delta ? rootTrade.delta.toFixed(2) : '—'}
-                                            </td>
-                                            <td className="px-3 py-2 text-center text-sm text-muted-foreground">
+                                            </TableCell>
+                                            <TableCell className="text-center text-sm text-muted-foreground">
                                                 {formatDateShort(rootTrade.openedDate)}
-                                            </td>
-                                            <td className="px-3 py-2 text-center text-sm text-muted-foreground">
+                                            </TableCell>
+                                            <TableCell className="text-center text-sm text-muted-foreground">
                                                 {(lastTrade.status === 'Closed' || lastTrade.status === 'Rolled') && lastTrade.closedDate
                                                     ? formatDateShort(lastTrade.closedDate)
                                                     : formatDateShort(lastTrade.expirationDate)
                                                 }
-                                            </td>
-                                            <td className="px-3 py-2 text-center">
+                                            </TableCell>
+                                            <TableCell className="text-center">
                                                 {chainDte !== null ? (
                                                     <span className={`font-mono text-sm font-medium ${chainDte <= 3 ? 'text-rose-600 dark:text-rose-400' :
                                                         chainDte <= 7 ? 'text-muted-foreground' :
@@ -480,22 +482,22 @@ export const TradeTable = ({
                                                 ) : (
                                                     <span className="text-muted-foreground dark:text-muted-foreground text-sm">—</span>
                                                 )}
-                                            </td>
-                                            <td className={`px-3 py-2 text-center font-mono text-sm font-medium ${chain.chainPnL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                            </TableCell>
+                                            <TableCell className={`text-center font-mono text-sm font-medium ${chain.chainPnL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                                 {formatCurrency(chain.chainPnL)}
                                                 {chain.isMultiTrade && (
                                                     <span className="block text-[10px] text-muted-foreground font-normal">chain total</span>
                                                 )}
-                                            </td>
-                                            <td className={`px-3 py-2 text-center font-mono text-sm ${chain.chainRoi >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                            </TableCell>
+                                            <TableCell className={`text-center font-mono text-sm ${chain.chainRoi >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                                 {formatPercent(chain.chainRoi)}
-                                            </td>
-                                            <td className={`px-3 py-2 text-center text-xs font-medium ${
+                                            </TableCell>
+                                            <TableCell className={`text-center text-xs font-medium ${
                                                 chain.finalStatus === 'Open' ? 'text-foreground' : 'text-muted-foreground'
                                             }`}>
                                                 {chain.finalStatus}
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
+                                            </TableCell>
+                                            <TableCell className="text-right">
                                                 <div className="flex justify-end gap-1">
                                                     {/* Open CC button - wheel strategy only: shown when CSP was assigned and shares still owned */}
                                                     {rootTrade.type === 'CSP' &&
@@ -524,7 +526,7 @@ export const TradeTable = ({
                                                             </button>
                                                             <button
                                                                 onClick={() => onRoll(chain.trades[chain.trades.length - 1])}
-                                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground dark:hover:text-amber-400 hover:bg-muted dark:hover:bg-amber-900/30 rounded transition-colors"
+                                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                                                                 title="Close and open new position"
                                                             >
                                                                 <RefreshCw className="w-3.5 h-3.5" />
@@ -549,28 +551,26 @@ export const TradeTable = ({
                                                         <span>Delete</span>
                                                     </button>
                                                 </div>
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
 
                                         {/* Child Trade Rows (when expanded) */}
                                         {isExpanded && chain.trades.slice(1).map((trade, idx) => {
                                             const metrics = calculateMetrics(trade, getLiveOptionPrice(trade));
                                             const dte = calculateDTE(trade.expirationDate, trade.status);
                                             return (
-                                                <tr key={trade.id} className="hover:bg-accent/80 dark:hover:bg-accent/50 transition-colors">
-                                                    <td className="px-3 py-2 text-center text-sm text-muted-foreground">
+                                                <TableRow key={trade.id}>
+                                                    <TableCell className="text-center text-sm text-muted-foreground">
                                                         <div className="flex items-center justify-center gap-1">
                                                             <span className="text-muted-foreground dark:text-muted-foreground mr-1">└</span>
-                                                            <Link2 className="w-3 h-3 text-amber-500" />
+                                                            <Link2 className="w-3 h-3 text-muted-foreground" />
                                                             <span className="text-muted-foreground">Roll #{idx + 1}</span>
                                                         </div>
-                                                    </td>
-                                                    <td className="px-3 py-2 text-center">
-                                                        <span className={`px-2 py-0.5 rounded text-xs font-semibold ${TYPE_BADGE_CLASSES[trade.type] || TYPE_BADGE_CLASSES.CSP}`}>
-                                                            {trade.type}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-3 py-2 text-center font-mono text-sm text-muted-foreground">${trade.strike}</td>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Badge variant={TYPE_BADGE_VARIANTS[trade.type] || 'secondary'} className="font-semibold">{trade.type}</Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-center font-mono text-sm text-muted-foreground">${trade.strike}</TableCell>
                                                     {livePricesEnabled && (() => {
                                                         const isBuyType = trade.type === 'CALL' || trade.type === 'PUT';
                                                         if (trade.status === 'Open') {
@@ -579,7 +579,7 @@ export const TradeTable = ({
                                                                 ? optPrice >= trade.entryPrice
                                                                 : optPrice <= trade.entryPrice);
                                                             return (
-                                                                <td className={`px-3 py-2 text-center font-mono text-sm font-medium ${
+                                                                <TableCell className={`text-center font-mono text-sm font-medium ${
                                                                     optPrice != null
                                                                         ? isProfit
                                                                             ? 'text-emerald-600 dark:text-emerald-400'
@@ -587,12 +587,12 @@ export const TradeTable = ({
                                                                         : 'text-muted-foreground'
                                                                 }`}>
                                                                     {optPrice != null ? `$${optPrice.toFixed(2)}` : '—'}
-                                                                </td>
+                                                                </TableCell>
                                                             );
                                                         }
                                                         const price = prices[trade.ticker.toUpperCase()]?.price;
                                                         return (
-                                                            <td className={`px-3 py-2 text-center font-mono text-sm font-medium ${
+                                                            <TableCell className={`text-center font-mono text-sm font-medium ${
                                                                 price != null
                                                                     ? price >= trade.strike
                                                                         ? 'text-emerald-600 dark:text-emerald-400'
@@ -600,23 +600,23 @@ export const TradeTable = ({
                                                                     : 'text-muted-foreground'
                                                             }`}>
                                                                 {price != null ? `$${price.toFixed(2)}` : '—'}
-                                                            </td>
+                                                            </TableCell>
                                                         );
                                                     })()}
-                                                    <td className="px-3 py-2 text-center font-mono text-sm text-muted-foreground">{trade.quantity}</td>
-                                                    <td className="px-3 py-2 text-center font-mono text-sm text-muted-foreground">
+                                                    <TableCell className="text-center font-mono text-sm text-muted-foreground">{trade.quantity}</TableCell>
+                                                    <TableCell className="text-center font-mono text-sm text-muted-foreground">
                                                         {trade.delta ? trade.delta.toFixed(2) : '—'}
-                                                    </td>
-                                                    <td className="px-3 py-2 text-center text-sm text-muted-foreground">
+                                                    </TableCell>
+                                                    <TableCell className="text-center text-sm text-muted-foreground">
                                                         {formatDateShort(trade.openedDate)}
-                                                    </td>
-                                                    <td className="px-3 py-2 text-center text-sm text-muted-foreground">
+                                                    </TableCell>
+                                                    <TableCell className="text-center text-sm text-muted-foreground">
                                                         {(trade.status === 'Closed' || trade.status === 'Rolled') && trade.closedDate
                                                             ? formatDateShort(trade.closedDate)
                                                             : formatDateShort(trade.expirationDate)
                                                         }
-                                                    </td>
-                                                    <td className="px-3 py-2 text-center">
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
                                                         {dte !== null ? (
                                                             <span className={`font-mono text-sm font-medium ${dte <= 3 ? 'text-rose-600 dark:text-rose-400' : dte <= 7 ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
                                                                 {dte}d
@@ -624,19 +624,19 @@ export const TradeTable = ({
                                                         ) : (
                                                             <span className="text-muted-foreground dark:text-muted-foreground text-sm">—</span>
                                                         )}
-                                                    </td>
-                                                    <td className={`px-3 py-2 text-center font-mono text-sm font-medium ${metrics.pnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                                    </TableCell>
+                                                    <TableCell className={`text-center font-mono text-sm font-medium ${metrics.pnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                                         {formatCurrency(metrics.pnl)}
-                                                    </td>
-                                                    <td className={`px-3 py-2 text-center font-mono text-sm ${metrics.roi >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                                    </TableCell>
+                                                    <TableCell className={`text-center font-mono text-sm ${metrics.roi >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                                         {formatPercent(metrics.roi)}
-                                                    </td>
-                                                    <td className={`px-3 py-2 text-center text-xs font-medium ${
+                                                    </TableCell>
+                                                    <TableCell className={`text-center text-xs font-medium ${
                                                         trade.status === 'Open' ? 'text-foreground' : 'text-muted-foreground'
                                                     }`}>
                                                         {trade.status}
-                                                    </td>
-                                                    <td className="px-3 py-2 text-right">
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
                                                         <div className="flex justify-end gap-1">
                                                             <button
                                                                 onClick={() => onEdit(trade)}
@@ -655,16 +655,16 @@ export const TradeTable = ({
                                                                 <span>Delete</span>
                                                             </button>
                                                         </div>
-                                                    </td>
-                                                </tr>
+                                                    </TableCell>
+                                                </TableRow>
                                             );
                                         })}
                                     </React.Fragment>
                                 );
                             })
                         )}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
             </div>
 
             {/* Pagination */}
@@ -687,8 +687,8 @@ export const TradeTable = ({
                                     key={page}
                                     onClick={() => setCurrentPage(page)}
                                     className={`w-8 h-8 rounded-lg text-sm font-medium ${page === currentPage
-                                        ? 'bg-primary dark:bg-primary text-white'
-                                        : 'text-muted-foreground hover:bg-accent dark:hover:bg-accent'
+                                        ? 'bg-foreground text-background'
+                                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                                     }`}
                                 >
                                     {page}
@@ -707,32 +707,22 @@ export const TradeTable = ({
             )}
 
             {/* Expire Confirmation Modal */}
-            {expireConfirm && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-card rounded-lg shadow-xl max-w-sm w-full mx-4 p-6">
-                        <h3 className="text-lg font-semibold text-foreground mb-2">
-                            Confirm Expiry
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Mark <span className="font-semibold">{expireConfirm.ticker} {expireConfirm.type} ${expireConfirm.strike}</span> as expired worthless?
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setExpireConfirm(null)}
-                                className="flex-1 px-4 py-2 border border-border rounded-lg text-foreground font-medium hover:bg-accent dark:hover:bg-accent"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmExpire}
-                                className="flex-1 px-4 py-2 bg-success dark:bg-success rounded-lg text-white font-semibold hover:bg-success/90 dark:hover:bg-success/90"
-                            >
-                                Expire
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+            <Dialog open={!!expireConfirm} onOpenChange={(open) => { if (!open) setExpireConfirm(null); }}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>Confirm Expiry</DialogTitle>
+                        <DialogDescription>
+                            {expireConfirm && (
+                                <>Mark <span className="font-semibold">{expireConfirm.ticker} {expireConfirm.type} ${expireConfirm.strike}</span> as expired worthless?</>
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-2">
+                        <Button variant="outline" className="flex-1" onClick={() => setExpireConfirm(null)}>Cancel</Button>
+                        <Button className="flex-1" onClick={confirmExpire}>Expire</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </Card>
     );
 };

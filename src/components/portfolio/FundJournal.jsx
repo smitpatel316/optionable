@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FundTransactionModal } from './FundTransactionModal';
+import { Card } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const formatCurrency = (value) => {
     if (value === null || value === undefined) return '$0.00';
@@ -9,12 +14,13 @@ const formatCurrency = (value) => {
     return `${sign}$${Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-const typeColors = {
-    deposit: 'bg-success/15 text-emerald-700 dark:bg-success/15 dark:text-emerald-400',
-    withdrawal: 'bg-rose-500/15 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
-    dividend: 'bg-muted text-foreground dark:bg-muted dark:text-foreground',
-    interest: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    fee: 'bg-muted text-foreground dark:bg-secondary dark:text-foreground',
+// Cash-flow direction carries the hue (money in vs out); neutral types are zinc.
+const typeVariants = {
+    deposit: 'success',
+    withdrawal: 'destructive',
+    dividend: 'secondary',
+    interest: 'secondary',
+    fee: 'muted',
 };
 
 export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showToast, selectedAccountId, accounts, itemsPerPage }) => {
@@ -65,21 +71,21 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
         : transactions.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
 
     return (
-        <div className="bg-card rounded-lg shadow-sm border border-border">
+        <Card className="overflow-hidden">
             <div className="p-4 border-b border-border flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-foreground">Fund Journal</h3>
                 <div className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded">
                         {transactions.length} transactions
                     </span>
-                    <button
+                    <Button
+                        size="sm"
                         onClick={() => { setEditingTransaction(null); setShowModal(true); }}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
                         title="Add transaction"
                     >
                         <Plus className="w-4 h-4" />
                         Add
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -89,51 +95,51 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
                 </div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-border bg-muted">
-                                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Date</th>
-                                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Type</th>
-                                <th className="text-right px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Amount</th>
-                                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Description</th>
-                                <th className="text-right px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
+                    <Table className="min-w-[520px]">
+                        <TableHeader>
+                            <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                <TableHead>Date</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {paginatedTransactions.map(txn => (
-                                <tr key={txn.id} className="hover:bg-accent dark:hover:bg-accent/30 transition-colors">
-                                    <td className="px-5 py-3 text-foreground">{txn.date}</td>
-                                    <td className="px-5 py-3">
-                                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium capitalize ${typeColors[txn.type] || ''}`}>
+                                <TableRow key={txn.id}>
+                                    <TableCell className="px-5 text-foreground">{txn.date}</TableCell>
+                                    <TableCell className="px-5">
+                                        <Badge variant={typeVariants[txn.type] || 'muted'} className="capitalize font-normal">
                                             {txn.type}
-                                        </span>
-                                    </td>
-                                    <td className="px-5 py-3 text-right font-mono text-foreground">
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="px-5 text-right font-mono text-foreground">
                                         {formatCurrency(txn.amount)}
-                                    </td>
-                                    <td className="px-5 py-3 text-muted-foreground max-w-[250px] truncate">
+                                    </TableCell>
+                                    <TableCell className="px-5 text-muted-foreground max-w-[250px] truncate">
                                         {txn.description || '—'}
-                                    </td>
-                                    <td className="px-5 py-3 text-right">
+                                    </TableCell>
+                                    <TableCell className="px-5 text-right">
                                         <div className="flex items-center justify-end gap-1">
                                             <button
                                                 onClick={() => handleEdit(txn)}
-                                                className="p-1.5 text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground hover:bg-accent dark:hover:bg-accent rounded transition-colors"
+                                                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
                                             >
                                                 <Pencil className="w-3.5 h-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(txn.id)}
-                                                className="p-1.5 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
+                                                className="p-1.5 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             )}
 
@@ -147,7 +153,7 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
                         <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={safePage === 1}
-                            className="p-2 rounded-lg border border-border text-muted-foreground hover:bg-accent dark:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 rounded-md border border-border text-muted-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -156,10 +162,12 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
                                 <button
                                     key={page}
                                     onClick={() => setCurrentPage(page)}
-                                    className={`w-8 h-8 rounded-lg text-sm font-medium ${page === safePage
-                                        ? 'bg-primary dark:bg-primary text-white'
-                                        : 'text-muted-foreground hover:bg-accent dark:hover:bg-accent'
-                                    }`}
+                                    className={cn(
+                                        'w-8 h-8 rounded-md text-sm font-medium transition-colors',
+                                        page === safePage
+                                            ? 'bg-foreground text-background'
+                                            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                                    )}
                                 >
                                     {page}
                                 </button>
@@ -168,7 +176,7 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
                         <button
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={safePage === totalPages}
-                            className="p-2 rounded-lg border border-border text-muted-foreground hover:bg-accent dark:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 rounded-md border border-border text-muted-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
@@ -184,6 +192,6 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
                 accounts={accounts}
                 selectedAccountId={selectedAccountId}
             />
-        </div>
+        </Card>
     );
 };

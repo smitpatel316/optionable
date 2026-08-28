@@ -139,9 +139,9 @@ const CapitalCard = ({ snapshot, updatedAt }) => {
 // ---------- Scan funnel ----------
 
 const ACTION_STYLE = {
-    sold: 'bg-success/15 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300',
+    sold: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
     skipped: 'bg-muted text-muted-foreground',
-    blocked: 'bg-rose-500/15 dark:bg-red-900/40 text-rose-600 dark:text-rose-400',
+    blocked: 'bg-rose-500/15 dark:bg-rose-400/15 text-rose-600 dark:text-rose-400',
     none: 'bg-muted text-foreground',
 };
 
