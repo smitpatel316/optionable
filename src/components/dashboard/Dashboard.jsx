@@ -20,6 +20,8 @@ export const Dashboard = ({ stats }) => {
     const realizedCapitalGL = stats.realizedCapitalGL ?? 0;
     const closedPositions = stats.closedPositions ?? 0;
     const totalCommissions = stats.totalCommissions ?? 0;
+    const openPremium = stats.openPremium ?? 0;
+    const realizedReconciled = stats.realizedPlusReconciled ?? finalized;
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -27,7 +29,7 @@ export const Dashboard = ({ stats }) => {
                 label="Booked P/L (cash)"
                 value={formatCurrency(booked)}
                 valueClassName={booked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}
-                subtext={`Finalized: ${formatCurrency(finalized)}`}
+                subtext={`Open premium ${formatCurrency(openPremium)} · Realized + reconciled ${formatCurrency(realizedReconciled)}`}
             />
 
             <KpiCard

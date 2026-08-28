@@ -34,6 +34,8 @@ router.get('/', (req, res) => {
                              WHEN type IN ('CALL', 'PUT') THEN (closePrice - entryPrice) * quantity * 100 - commission
                              ELSE 0 END ELSE 0 END), 0) as finalizedPnL,
                 COALESCE(SUM(entryPrice * quantity * 100), 0) as totalPremium,
+                COALESCE(SUM(CASE WHEN status = 'Open' AND type IN ('CSP', 'CC') THEN entryPrice * quantity * 100
+                             ELSE 0 END), 0) as openPremium,
                 COALESCE(SUM(CASE WHEN status = 'Open' AND type IN ('CSP', 'CC') THEN strike * quantity * 100
                              WHEN status = 'Open' AND type IN ('CALL', 'PUT') THEN entryPrice * quantity * 100
                              ELSE 0 END), 0) as capitalAtRisk,
@@ -172,6 +174,11 @@ router.get('/', (req, res) => {
             bookedPnL: toDollars(mainStats.totalPnL), // alias: totalPnL is cash-basis
             finalizedPnL: toDollars(mainStats.finalizedPnL),
             totalPremiumCollected: toDollars(mainStats.totalPremium),
+            // Split of the booked number: premium already collected on still-open
+            // short options (cash landed, trade live) vs realized + reconciled
+            // (closed-trade P/L + realized stock gains). Never mixed.
+            openPremium: toDollars(mainStats.openPremium),
+            realizedPlusReconciled: toDollars(mainStats.finalizedPnL + positionStats.realizedCapitalGL),
             totalTrades: mainStats.totalTrades,
             openTradesCount: mainStats.openCount,
             completedTradesCount: mainStats.expiredCount + mainStats.assignedCount + mainStats.closedCount,
