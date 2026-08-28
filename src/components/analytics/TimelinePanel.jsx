@@ -87,7 +87,7 @@ export const TimelinePanel = ({ accountId }) => {
 
     return (
         <Card><CardContent className="p-5">
-            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-1">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-1">
                 <CalendarRange className="w-4 h-4 text-muted-foreground" />
                 Wheel Timeline
             </h3>

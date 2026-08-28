@@ -63,7 +63,7 @@ export const PnLChart = ({
         <Card>
             <CardContent className="p-4 md:p-5">
             <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-4 min-w-0">
-                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-muted-foreground" />
                     Cumulative P/L
                 </h3>

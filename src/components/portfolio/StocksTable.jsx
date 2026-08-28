@@ -134,7 +134,7 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
         <Card className="overflow-hidden">
             {/* Header - matches TradeTable style */}
             <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/50">
-                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <Briefcase className="w-4 h-4 text-muted-foreground" />
                     Stock Positions
                 </h3>

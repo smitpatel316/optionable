@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const Card = ({ title, icon: Icon, children }) => (
     <UICard className="p-5">
-        <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
             <Icon className="w-4 h-4 text-muted-foreground" />
             {title}
         </h3>

@@ -241,7 +241,7 @@ export const OpenPositionsTable = () => {
     return (
         <Card className="overflow-hidden">
             <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/50">
-                <h3 className="font-semibold text-foreground">Open Positions</h3>
+                <h3 className="text-sm font-semibold text-foreground">Open Positions</h3>
                 {asOf && (
                     <span className="text-xs text-muted-foreground">as of {asOf}</span>
                 )}

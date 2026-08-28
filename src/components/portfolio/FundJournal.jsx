@@ -73,7 +73,7 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
     return (
         <Card className="overflow-hidden">
             <div className="p-4 border-b border-border flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">Fund Journal</h3>
+                <h3 className="text-sm font-semibold text-foreground">Fund Journal</h3>
                 <div className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded">
                         {transactions.length} transactions
