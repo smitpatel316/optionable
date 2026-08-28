@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Landmark, TrendingUp, Scale } from 'lucide-react';
+import { Landmark, TrendingUp, Scale, BarChart3 } from 'lucide-react';
 import {
     LineChart,
     Line,
+    BarChart,
+    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip,
     Legend,
-    ResponsiveContainer
+    ResponsiveContainer,
+    Cell
 } from 'recharts';
 import { API_URL } from '../../utils/constants';
 import { formatCurrency } from '../../utils/formatters';
@@ -22,6 +25,21 @@ const Card = ({ title, icon: Icon, children }) => (
         {children}
     </div>
 );
+
+const PremiumTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+        const v = payload[0].value;
+        return (
+            <div className="bg-white dark:bg-slate-800 p-3 rounded-md shadow-sm border border-slate-200 dark:border-slate-700 text-sm">
+                <p className="text-slate-500 dark:text-slate-400 mb-1">{label}</p>
+                <p className={`font-mono font-medium ${v >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {formatCurrency(v)}
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
 
 const BenchmarkTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -42,6 +60,7 @@ const BenchmarkTooltip = ({ active, payload, label }) => {
 export const IncomeView = ({ accountId, darkMode }) => {
     const [income, setIncome] = useState(null);
     const [benchmark, setBenchmark] = useState(null);
+    const [premiumMonthly, setPremiumMonthly] = useState(null);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -53,6 +72,10 @@ export const IncomeView = ({ accountId, darkMode }) => {
         fetch(`${API_URL}/income/benchmark`)
             .then(r => r.json())
             .then(j => j.success ? setBenchmark(j.data) : setError(j.error?.message))
+            .catch(e => setError(e.message));
+        fetch(`${API_URL}/income/premium-monthly${acct}`)
+            .then(r => r.json())
+            .then(j => j.success ? setPremiumMonthly(j.data.months) : setError(j.error?.message))
             .catch(e => setError(e.message));
     }, [accountId]);
 
@@ -118,6 +141,45 @@ export const IncomeView = ({ accountId, darkMode }) => {
                             </p>
                         )}
                     </div>
+                )}
+            </Card>
+
+            <Card title="Premium by Month" icon={BarChart3}>
+                {!premiumMonthly ? (
+                    <div className="h-48 bg-slate-100 dark:bg-slate-700 rounded animate-pulse"></div>
+                ) : premiumMonthly.length === 0 ? (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No closed option trades yet.</p>
+                ) : (
+                    <>
+                        <div className="h-48">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={premiumMonthly} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? '#334155' : '#e2e8f0'} />
+                                    <XAxis
+                                        dataKey="month"
+                                        tick={{ fontSize: 11, fill: darkMode ? '#64748b' : '#94a3b8' }}
+                                        tickLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                                        axisLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                                    />
+                                    <YAxis
+                                        tick={{ fontSize: 11, fill: darkMode ? '#64748b' : '#94a3b8' }}
+                                        tickLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                                        axisLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                                        tickFormatter={(v) => `$${v}`}
+                                    />
+                                    <Tooltip content={<PremiumTooltip />} cursor={{ fill: darkMode ? '#1e293b' : '#f1f5f9' }} />
+                                    <Bar dataKey="premium" radius={[4, 4, 0, 0]}>
+                                        {premiumMonthly.map((m) => (
+                                            <Cell key={m.month} fill={m.premium >= 0 ? '#10b981' : '#ef4444'} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                            Net premium realized per month on closed option legs (after buy-backs and commissions). Bars sum to the options figure above.
+                        </p>
+                    </>
                 )}
             </Card>
 

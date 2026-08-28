@@ -160,6 +160,32 @@ router.get('/income', (req, res) => {
     }
 });
 
+// GET /api/income/premium-monthly — options premium realized per calendar month.
+// Same formula as computeOptionsIncome ((entry-close)*qty*100 - commission for
+// shorts, mirrored for longs), applied to the resolved legs closed in each
+// month, so the bars sum to the Income Breakdown's options number.
+router.get('/premium-monthly', (req, res) => {
+    try {
+        const { accountId } = req.query;
+        const acctAnd = accountId ? 'AND accountId = ?' : '';
+        const params = accountId ? [Number(accountId)] : [];
+        const rows = db.prepare(`
+            SELECT strftime('%Y-%m', closedDate) as month,
+                   SUM(CASE WHEN type IN ('CALL', 'PUT') THEN (closePrice - entryPrice) * quantity * 100 - commission
+                            ELSE (entryPrice - closePrice) * quantity * 100 - commission END) as premium
+            FROM trades
+            WHERE status != 'Open' AND closedDate IS NOT NULL ${acctAnd}
+            GROUP BY month
+            ORDER BY month
+        `).all(...params);
+        apiResponse.success(res, {
+            months: rows.map((r) => ({ month: r.month, premium: Math.round(toDollars(r.premium || 0) * 100) / 100 }))
+        });
+    } catch (err) {
+        apiResponse.error(res, err.message);
+    }
+});
+
 // GET /api/benchmark — wheel equity curve vs an SPY buy-and-hold shadow portfolio
 router.get('/benchmark', async (req, res) => {
     try {
