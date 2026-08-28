@@ -16,7 +16,7 @@ export const TabBar = ({ activeTab, onTabChange, showIncome = false }) => {
                 {tabs.map(tab => {
                     const Icon = tab.icon;
                     return (
-                        <TabsTrigger key={tab.id} value={tab.id} className="flex-1 px-2 sm:px-4 py-2">
+                        <TabsTrigger key={tab.id} value={tab.id} aria-label={tab.label} className="flex-1 px-2 sm:px-4 py-2">
                             <Icon />
                             <span className="hidden xs:inline sm:inline">{tab.label}</span>
                         </TabsTrigger>

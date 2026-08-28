@@ -22,6 +22,9 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    // Keep fonts as real files: the server CSP is `default-src 'self'` with no
+    // `font-src data:`, so Vite's <4KB data-URI inlining would get blocked.
+    assetsInlineLimit: (filePath) => (/\.(woff2?|ttf|otf|eot)$/.test(filePath) ? false : undefined),
   },
 });
 

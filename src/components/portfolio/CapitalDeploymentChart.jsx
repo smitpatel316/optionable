@@ -32,7 +32,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                 <p className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: 'hsl(var(--foreground))' }} />
                     <span className="text-muted-foreground">Deployed:</span>
-                    <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                    <span className="font-mono font-medium text-foreground">
                         ${day.deployed.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </span>
                 </p>

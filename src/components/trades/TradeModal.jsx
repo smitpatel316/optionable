@@ -214,11 +214,7 @@ export const TradeModal = ({
 
                     <div className="grid grid-cols-2 gap-4 bg-muted p-4 rounded-lg border border-border">
                         <div>
-                            <label className={`block text-xs font-semibold uppercase mb-1 ${
-                                isBuy
-                                    ? 'text-rose-500 dark:text-rose-400'
-                                    : 'text-emerald-600 dark:text-emerald-400'
-                            }`}>
+                            <label className="block text-xs font-semibold uppercase mb-1 text-muted-foreground">
                                 {isRolling ? 'New Premium *' : isBuy ? 'Premium Paid ($)' : 'Entry Premium ($)'}
                             </label>
                             <div className="relative">
@@ -226,11 +222,7 @@ export const TradeModal = ({
                                 <Input
                                     type="number" step="0.01" name="entryPrice" required
                                     value={formData.entryPrice} onChange={handleInputChange}
-                                    className={`pl-7 ${
-                                        isBuy
-                                            ? 'border-rose-500/30 dark:border-rose-400/30 focus-visible:ring-rose-500'
-                                            : 'border-emerald-500/30 dark:border-emerald-400/30 focus-visible:ring-emerald-500'
-                                    }`}
+                                    className="pl-7"
                                     placeholder="Price per share"
                                 />
                             </div>
@@ -242,11 +234,7 @@ export const TradeModal = ({
 
                         {!isRolling && (
                             <div>
-                                <label className={`block text-xs font-semibold uppercase mb-1 ${
-                                    isBuy
-                                        ? 'text-emerald-600 dark:text-emerald-400'
-                                        : 'text-rose-500 dark:text-rose-400'
-                                }`}>
+                                <label className="block text-xs font-semibold uppercase mb-1 text-muted-foreground">
                                     {isBuy ? 'Sell Price ($)' : 'Close Cost ($)'}
                                 </label>
                                 <div className="relative">
@@ -254,11 +242,7 @@ export const TradeModal = ({
                                     <Input
                                         type="number" step="0.01" name="closePrice"
                                         value={formData.closePrice} onChange={handleInputChange}
-                                        className={`pl-7 ${
-                                            isBuy
-                                                ? 'border-emerald-500/30 dark:border-emerald-400/30 focus-visible:ring-emerald-500'
-                                                : 'border-rose-500/30 dark:border-rose-400/30 focus-visible:ring-rose-500'
-                                        }`}
+                                        className="pl-7"
                                         placeholder="0.00 if open"
                                     />
                                 </div>

@@ -4,7 +4,9 @@ export const useTheme = () => {
     const [darkMode, setDarkMode] = useState(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('theme');
-            return saved === 'dark'; // Default to light unless explicitly set to dark
+            // Dark is the documented default (see theme-init.js); only an
+            // explicit 'light' choice flips it off.
+            return saved !== 'light';
         }
         return false;
     });

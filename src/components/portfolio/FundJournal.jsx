@@ -14,10 +14,10 @@ const formatCurrency = (value) => {
     return `${sign}$${Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-// Cash-flow direction carries the hue (money in vs out); neutral types are zinc.
+// Cash-flow types are transfers, not P/L — keep them neutral zinc.
 const typeVariants = {
-    deposit: 'success',
-    withdrawal: 'destructive',
+    deposit: 'secondary',
+    withdrawal: 'secondary',
     dividend: 'secondary',
     interest: 'secondary',
     fee: 'muted',

@@ -138,7 +138,7 @@ export const StocksTable = ({ stocks, onCreate, onUpdate, onDelete, showToast, s
                     <Briefcase className="w-4 h-4 text-muted-foreground" />
                     Stock Positions
                 </h3>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                     {/* Status Filter Tabs */}
                     <div className="flex bg-muted rounded-md p-1 gap-0.5">
                         {STATUS_TABS.map(tab => (

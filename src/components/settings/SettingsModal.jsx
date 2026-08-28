@@ -286,7 +286,7 @@ export const SettingsModal = ({ onClose, showToast, accounts, onCreateAccount, o
                                                 />
                                                 <button
                                                     onClick={() => handleRenameAccount(account.id)}
-                                                    className="p-1 text-emerald-600 hover:bg-emerald-500/15 rounded"
+                                                    className="p-1 text-foreground hover:bg-accent rounded"
                                                 >
                                                     <Check className="w-4 h-4" />
                                                 </button>

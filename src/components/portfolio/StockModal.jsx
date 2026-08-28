@@ -82,8 +82,8 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         {isSelling
-                            ? <TrendingDown className="w-5 h-5 text-rose-500" />
-                            : <TrendingUp className="w-5 h-5 text-emerald-500" />
+                            ? <TrendingDown className="w-5 h-5 text-foreground" />
+                            : <TrendingUp className="w-5 h-5 text-foreground" />
                         }
                         {isSelling ? `Sell ${editingStock?.ticker}` : editingStock ? 'Edit Stock' : 'Buy Stock'}
                     </DialogTitle>
@@ -211,7 +211,7 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase mb-1">Cost Basis ($) *</label>
+                                    <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Cost Basis ($) *</label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
                                         <Input
@@ -220,7 +220,7 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
                                             min="0"
                                             value={formData.costBasis || ''}
                                             onChange={(e) => setFormData(prev => ({ ...prev, costBasis: e.target.value }))}
-                                            className="pl-7 border-emerald-500/30 dark:border-emerald-400/30 focus-visible:ring-emerald-500"
+                                            className="pl-7"
                                             placeholder="Per share"
                                             required
                                         />

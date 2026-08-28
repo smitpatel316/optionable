@@ -7,7 +7,7 @@ export const Toast = ({ toast, onClose }) => {
     const getTypeClasses = () => {
         switch (toast.type) {
             case 'success':
-                return 'bg-popover border-emerald-500/40 text-emerald-700 dark:text-emerald-300';
+                return 'bg-popover border-border text-popover-foreground';
             case 'error':
                 return 'bg-popover border-rose-500/40 text-rose-600 dark:text-rose-400';
             default:
