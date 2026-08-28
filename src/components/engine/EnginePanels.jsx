@@ -63,7 +63,7 @@ const EmptyState = ({ message }) => (
 
 const CapitalRow = ({ label, value, sub, warn }) => (
     <div className="flex items-baseline justify-between py-1.5">
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
         <div className="text-right">
             <span className={`font-mono font-semibold ${warn ? 'text-foreground' : 'text-foreground'}`}>{value}</span>
             {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
@@ -88,7 +88,7 @@ const CapitalCard = ({ snapshot, updatedAt }) => {
             <div className="p-4 space-y-3">
                 <div>
                     <div className="flex items-baseline justify-between mb-1">
-                        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Risk deployed</span>
+                        <span className="text-sm font-medium text-muted-foreground">Risk deployed</span>
                         <span className="font-mono text-sm font-semibold text-foreground">
                             {formatCurrency(riskUsed)} / {formatCurrency(riskCap)}
                         </span>

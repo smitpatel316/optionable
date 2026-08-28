@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 const RiskCard = ({ label, value, subtext, valueClassName = '', title }) => (
     <Card className="min-h-[88px]" title={title}>
         <CardContent className="p-4 flex flex-col justify-between h-full">
-            <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{label}</span>
+            <span className="text-sm font-medium text-muted-foreground">{label}</span>
             <div className={cn('text-2xl font-bold font-mono mt-1', valueClassName)}>{value}</div>
             <div className="text-xs text-muted-foreground mt-1">{subtext}</div>
         </CardContent>

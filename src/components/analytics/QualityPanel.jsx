@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 
 const Stat = ({ label, value, hint }) => (
     <div className="px-4 py-3">
-        <div className="text-xs text-muted-foreground uppercase tracking-wide">{label}</div>
+        <div className="text-sm font-medium text-muted-foreground">{label}</div>
         <div className="text-lg font-semibold font-mono text-foreground mt-0.5">{value}</div>
         {hint && <div className="text-xs text-muted-foreground mt-0.5">{hint}</div>}
     </div>
