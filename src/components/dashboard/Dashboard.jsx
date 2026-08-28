@@ -24,7 +24,7 @@ export const Dashboard = ({ stats }) => {
     const realizedReconciled = stats.realizedPlusReconciled ?? finalized;
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <KpiCard
                 label="Booked P/L (cash)"
                 value={formatCurrency(booked)}
@@ -37,13 +37,6 @@ export const Dashboard = ({ stats }) => {
                 value={formatPercent(stats.totalRoi ?? stats.avgRoi)}
                 valueClassName={(stats.totalRoi ?? stats.avgRoi) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}
                 subtext={`${stats.closedTradesCount} closed trades`}
-            />
-
-            <KpiCard
-                label="Win Rate"
-                value={formatPercent(stats.winRate)}
-                valueClassName="text-indigo-600 dark:text-indigo-400"
-                subtext={`${stats.resolvedChains} closed chains`}
             />
 
             <KpiCard
