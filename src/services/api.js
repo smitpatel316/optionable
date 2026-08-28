@@ -245,5 +245,16 @@ export const portfolioApi = {
         });
         const query = searchParams.toString();
         return request(`/portfolio/monthly${query ? `?${query}` : ''}`);
+    },
+    getDeployment: async (params = {}) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                searchParams.append(key, value);
+            }
+        });
+        const query = searchParams.toString();
+        return request(`/stats/deployment${query ? `?${query}` : ''}`);
     }
 };
+

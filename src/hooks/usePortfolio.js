@@ -6,6 +6,7 @@ export const usePortfolio = (accountId) => {
     const [stocks, setStocks] = useState([]);
     const [portfolioStats, setPortfolioStats] = useState(null);
     const [monthlyData, setMonthlyData] = useState([]);
+    const [deploymentData, setDeploymentData] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchFundTransactions = useCallback(async () => {
@@ -34,12 +35,14 @@ export const usePortfolio = (accountId) => {
         try {
             const params = {};
             if (accountId) params.accountId = accountId;
-            const [statsRes, monthlyRes] = await Promise.all([
+            const [statsRes, monthlyRes, deploymentRes] = await Promise.all([
                 portfolioApi.getStats(params),
-                portfolioApi.getMonthly(params)
+                portfolioApi.getMonthly(params),
+                portfolioApi.getDeployment(params)
             ]);
             setPortfolioStats(statsRes.data);
             setMonthlyData(monthlyRes.data);
+            setDeploymentData(deploymentRes.data.days || []);
         } catch (err) {
             console.error('Error fetching portfolio stats:', err);
         }
@@ -92,6 +95,7 @@ export const usePortfolio = (accountId) => {
         stocks,
         portfolioStats,
         monthlyData,
+        deploymentData,
         loading,
         fetchAll,
         createFundTransaction,
