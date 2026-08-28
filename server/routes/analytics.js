@@ -289,6 +289,75 @@ router.get('/attribution', (req, res) => {
     }
 });
 
+// ---------------- Closed-trade quality ----------------
+
+// GET /api/analytics/quality?accountId=N
+// How well closed trades actually performed. CLOSED TRADES ONLY — open
+// positions never blend in (same discipline as /attribution). Rolled legs are
+// excluded (they carry into the final leg, which is the quality sample).
+router.get('/quality', (req, res) => {
+    try {
+        const accountId = req.query.accountId || null;
+        const sql = `SELECT ticker, type, strike, quantity, entryPrice, closePrice, openedDate, closedDate, commission
+            FROM trades
+            WHERE status IN ('Closed', 'Expired', 'Assigned')
+            AND closePrice IS NOT NULL AND closedDate IS NOT NULL
+            ${accountId ? 'AND accountId = ?' : ''}`;
+        const closed = db.prepare(sql).all(...(accountId ? [Number(accountId)] : []));
+
+        const round2 = (v) => Math.round(v * 100) / 100;
+        let wins = 0, losses = 0;
+        let captureSum = 0, captureCount = 0;
+        let daysSum = 0;
+        let roiPerDaySum = 0, roiPerDayCount = 0;
+
+        for (const t of closed) {
+            const isShort = t.type === 'CSP' || t.type === 'CC';
+            // Realized P/L (dollars) — same formula as stats.js:
+            // short legs keep (entry − close); long legs keep (close − entry)
+            const diffCents = isShort ? t.entryPrice - t.closePrice : t.closePrice - t.entryPrice;
+            const pnl = (diffCents * t.quantity * 100 - (t.commission || 0)) / 100;
+            if (pnl > 0) wins += 1; else if (pnl < 0) losses += 1;
+
+            // Premium capture: share of the collected premium actually kept.
+            if (isShort && t.entryPrice > 0) {
+                captureSum += ((t.entryPrice - t.closePrice) / t.entryPrice) * 100;
+                captureCount += 1;
+            }
+
+            const opened = new Date(`${t.openedDate}T00:00:00`);
+            const shut = new Date(`${t.closedDate}T00:00:00`);
+            if (isNaN(opened) || isNaN(shut)) continue;
+            const days = Math.round((shut - opened) / 86400000);
+            daysSum += Math.max(days, 0);
+
+            // ROI/day on this trade's collateral; same-day closes count as 1 day
+            const collateral = (t.strike / 100) * 100 * t.quantity;
+            if (collateral > 0) {
+                roiPerDaySum += ((pnl / collateral) * 100) / Math.max(days, 1);
+                roiPerDayCount += 1;
+            }
+        }
+
+        const closedCount = closed.length;
+        res.json({
+            success: true,
+            data: {
+                closedCount,
+                wins,
+                losses,
+                winRate: closedCount ? round2((wins / closedCount) * 100) : null,
+                avgCapturePct: captureCount ? round2(captureSum / captureCount) : null,
+                avgDaysHeld: closedCount ? round2(daysSum / closedCount) : null,
+                avgRoiPerDayPct: roiPerDayCount ? round2(roiPerDaySum / roiPerDayCount) : null,
+            },
+        });
+    } catch (error) {
+        console.error('Analytics quality failed:', error);
+        res.status(500).json({ success: false, error: 'Failed to compute closed-trade quality' });
+    }
+});
+
 // ---------------- Wheel cycles ----------------
 
 // GET /api/analytics/cycles?accountId=N

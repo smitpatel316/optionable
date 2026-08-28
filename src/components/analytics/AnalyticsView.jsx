@@ -3,6 +3,7 @@ import { analyticsApi } from '../../services/api';
 import { RiskPanel } from './RiskPanel';
 import { ExposureLadder } from './ExposureLadder';
 import { AttributionPanel } from './AttributionPanel';
+import { QualityPanel } from './QualityPanel';
 import { CyclesPanel } from './CyclesPanel';
 
 // Analytics tab (fork addition 2026-08-28): advanced views derived server-side
@@ -13,6 +14,7 @@ export const AnalyticsView = ({ accountId }) => {
     const [risk, setRisk] = useState(null);
     const [exposure, setExposure] = useState(null);
     const [attribution, setAttribution] = useState(null);
+    const [quality, setQuality] = useState(null);
     const [cycles, setCycles] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -21,15 +23,17 @@ export const AnalyticsView = ({ accountId }) => {
         setLoading(true);
         setError(null);
         try {
-            const [riskRes, exposureRes, attributionRes, cyclesRes] = await Promise.all([
+            const [riskRes, exposureRes, attributionRes, qualityRes, cyclesRes] = await Promise.all([
                 analyticsApi.getRisk(accountId),
                 analyticsApi.getExposure(accountId),
                 analyticsApi.getAttribution(accountId),
+                analyticsApi.getQuality(accountId),
                 analyticsApi.getCycles(accountId),
             ]);
             setRisk(riskRes.data);
             setExposure(exposureRes.data);
             setAttribution(attributionRes.data);
+            setQuality(qualityRes.data);
             setCycles(cyclesRes.data.cycles);
         } catch (err) {
             setError(err.message);
@@ -51,6 +55,7 @@ export const AnalyticsView = ({ accountId }) => {
         <div className="space-y-6">
             <RiskPanel risk={risk} />
             <ExposureLadder exposure={exposure} />
+            <QualityPanel quality={quality} />
             <AttributionPanel attribution={attribution} />
             <CyclesPanel cycles={cycles} />
         </div>
