@@ -270,7 +270,7 @@ export default function App() {
                         />
 
                         {/* Summary Cards */}
-                        <SummaryCards stats={stats} />
+                        <SummaryCards />
                     </>
                 )}
 
