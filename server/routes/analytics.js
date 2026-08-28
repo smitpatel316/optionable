@@ -139,4 +139,68 @@ router.get('/risk', (req, res) => {
     }
 });
 
+// ---------------- Expiry ladder / collateral release ----------------
+
+// GET /api/analytics/exposure?accountId=N
+router.get('/exposure', (req, res) => {
+    try {
+        const accountId = req.query.accountId || null;
+        const open = openTradesFor(accountId);
+        const { data: enginePositions, updatedAt } = getEngineBlob('positions');
+        const { data: fundingQueue } = getEngineBlob('fundingQueue');
+
+        // Engine marks keyed by underlying|strike|expiry for mark-to-market premium
+        const marks = new Map();
+        if (Array.isArray(enginePositions)) {
+            for (const p of enginePositions) {
+                if (p.type !== 'CSP' && p.type !== 'CC') continue;
+                marks.set(`${p.underlying}|${Number(p.strike)}|${p.expiry}`, p);
+            }
+        }
+
+        const byDate = new Map();
+        for (const t of open) {
+            const date = t.expirationDate;
+            const dollarsStrike = t.strike / 100;
+            const mark = marks.get(`${t.ticker}|${dollarsStrike}|${date}`);
+            const remaining = mark
+                ? (Number(mark.currentPrice) || 0) * 100 * (mark.contracts || 1)
+                : (t.entryPrice / 100) * 100 * t.quantity;
+            const row = byDate.get(date) || { date, dte: daysUntil(date), count: 0, tickers: new Set(), collateral: 0, premiumRemaining: 0, types: new Set() };
+            row.count += 1;
+            row.tickers.add(t.ticker);
+            row.types.add(t.type);
+            row.collateral += dollarsStrike * 100 * t.quantity;
+            row.premiumRemaining += remaining;
+            byDate.set(date, row);
+        }
+
+        const expirations = [...byDate.values()]
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .map((r) => ({
+                date: r.date,
+                dte: r.dte,
+                count: r.count,
+                tickers: [...r.tickers].sort(),
+                types: [...r.types].sort(),
+                collateral: Math.round(r.collateral * 100) / 100,
+                premiumRemaining: Math.round(r.premiumRemaining * 100) / 100,
+            }));
+
+        res.json({
+            success: true,
+            data: {
+                asOf: updatedAt,
+                totalCollateral: expirations.reduce((s, r) => s + r.collateral, 0),
+                expirationCount: expirations.length,
+                expirations,
+                fundingQueue: Array.isArray(fundingQueue) ? fundingQueue : [],
+            },
+        });
+    } catch (error) {
+        console.error('Analytics exposure failed:', error);
+        res.status(500).json({ success: false, error: 'Failed to compute exposure ladder' });
+    }
+});
+
 export default router;

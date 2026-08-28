@@ -263,4 +263,6 @@ export const portfolioApi = {
 export const analyticsApi = {
     getRisk: (accountId) =>
         request(`/analytics/risk${accountId ? `?accountId=${accountId}` : ''}`),
+    getExposure: (accountId) =>
+        request(`/analytics/exposure${accountId ? `?accountId=${accountId}` : ''}`),
 };

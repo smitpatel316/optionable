@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { analyticsApi } from '../../services/api';
 import { RiskPanel } from './RiskPanel';
+import { ExposureLadder } from './ExposureLadder';
 
 // Analytics tab (fork addition 2026-08-28): advanced views derived server-side
 // from the trades table + engine-pushed positions blob. Fetches on mount and
@@ -8,6 +9,7 @@ import { RiskPanel } from './RiskPanel';
 
 export const AnalyticsView = ({ accountId }) => {
     const [risk, setRisk] = useState(null);
+    const [exposure, setExposure] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -15,8 +17,12 @@ export const AnalyticsView = ({ accountId }) => {
         setLoading(true);
         setError(null);
         try {
-            const res = await analyticsApi.getRisk(accountId);
-            setRisk(res.data);
+            const [riskRes, exposureRes] = await Promise.all([
+                analyticsApi.getRisk(accountId),
+                analyticsApi.getExposure(accountId),
+            ]);
+            setRisk(riskRes.data);
+            setExposure(exposureRes.data);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -36,6 +42,7 @@ export const AnalyticsView = ({ accountId }) => {
     return (
         <div className="space-y-6">
             <RiskPanel risk={risk} />
+            <ExposureLadder exposure={exposure} />
         </div>
     );
 };
