@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.19.0
+
+### Feature pack 2 (fork additions, e2e-tested) — open/realized split, premium-by-month, wheel timeline, roll what-ifs
+
+Inspired by feature reviews of optionwheeltracker.ai and chrischow/agamotto; everything derived from the trades table / engine blobs or clearly-labelled live Yahoo quotes. No new heavy deps.
+
+- **Open-premium vs realized split** — the Booked P/L card's subtext shows `Open premium` (sell premium collected on still-open short options) vs `Realized + reconciled` (closed-trade P/L + realized stock gains); new `openPremium` / `realizedPlusReconciled` fields on `/api/stats`.
+- **Premium by Month chart** — Income tab bar chart of net option premium realized per calendar month; new `GET /api/income/premium-monthly` reconciles to the Income Breakdown options total by construction.
+- **Wheel-cycle timeline** — Analytics tab Gantt: one lane per cycle (roll-chain root + legs), puts indigo / calls emerald / amber diamond where shares change hands / live legs ringed to today. Client-side from `/api/trades` paging.
+- **Roll what-if chips** — Open Positions `Roll?` column: indicative net credit for rolling the same strike ~1/+2 weeks out (sell at bid − buy back at ask, Yahoo chains server-cached 10 min). Green = roll pays you; slate — = no listed weekly to roll into. New `GET /api/analytics/roll-whatif`.
+
 ## v0.18.1
 
 ### Fix: equity history lost after Pi migration (fork addition)
