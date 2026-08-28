@@ -72,6 +72,17 @@ const PositionRow = ({ p, onPayoff }) => {
                         {p.rollsUsed}/{p.rollsMax ?? 2}
                     </span>
                 )}
+                {(p.type === 'CSP' || p.type === 'CC') && p.breakEven != null && (
+                    <div className="text-xs font-normal font-mono text-slate-400 dark:text-slate-500 mt-0.5">
+                        BE {formatCurrency(p.breakEven)}
+                        {p.distToBePct != null && (
+                            <span className={Number(p.distToBePct) < 0 ? 'text-red-500 dark:text-red-400' : ''}
+                                title={`Underlying last ~${formatCurrency(p.underlyingLast)} at push time — ${Number(p.distToBePct) < 0 ? 'past' : 'away from'} break-even`}>
+                                {` · ${Number(p.distToBePct) > 0 ? '+' : ''}${Number(p.distToBePct).toFixed(1)}% to BE`}
+                            </span>
+                        )}
+                    </div>
+                )}
             </td>
             <td className="px-3 py-2 text-center">
                 <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${TYPE_STYLE[p.type] || TYPE_STYLE.STOCK}`}>
