@@ -11,31 +11,22 @@ import { tradesApi } from '../../services/api';
 const DAY = 86400000;
 const dayMs = (iso) => (iso ? new Date(`${String(iso).slice(0, 10)}T00:00:00Z`).getTime() : null);
 
-const rootOf = (trade, byId) => {
-    let cur = trade;
-    const seen = new Set();
-    while (cur.parentTradeId && byId.has(cur.parentTradeId) && !seen.has(cur.id)) {
-        seen.add(cur.id);
-        cur = byId.get(cur.parentTradeId);
-    }
-    return cur.id;
-};
-
 const buildLanes = (trades) => {
-    const byId = new Map(trades.map((t) => [t.id, t]));
-    const roots = new Map();
+    // One lane per ticker: all cycle legs (CSPs, rolls, CCs) of a symbol share
+    // a row, so repeat wheels on the same underlying don't multiply rows.
+    const lanesByTicker = new Map();
     for (const t of trades) {
         if (t.type !== 'CSP' && t.type !== 'CC') continue;
-        const rid = rootOf(t, byId);
-        if (!roots.has(rid)) roots.set(rid, { ticker: t.ticker, legs: [] });
-        roots.get(rid).legs.push(t);
+        const key = t.ticker;
+        if (!lanesByTicker.has(key)) lanesByTicker.set(key, { ticker: key, legs: [] });
+        lanesByTicker.get(key).legs.push(t);
     }
     const lanes = [];
     let minDay = null;
     let maxDay = null;
-    for (const [rid, lane] of roots) {
+    for (const [ticker, lane] of lanesByTicker) {
         lane.legs.sort((a, b) => dayMs(a.openedDate || a.createdAt) - dayMs(b.openedDate || b.createdAt));
-        lane.id = rid;
+        lane.id = ticker;
         for (const l of lane.legs) {
             const s = dayMs(l.openedDate || l.createdAt);
             const e = dayMs(l.closedDate) || dayMs(l.expirationDate) || Date.now();
@@ -99,7 +90,7 @@ export const TimelinePanel = ({ accountId }) => {
                 <CalendarRange className="w-4 h-4 text-slate-400" />
                 Wheel Timeline
             </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">One lane per cycle; bars run open → close, open bars stretch to today.</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">One lane per ticker; bars run open → close, open bars stretch to today.</p>
             {!lanes ? (
                 <div className="h-32 bg-slate-100 dark:bg-slate-700 rounded animate-pulse"></div>
             ) : lanes.length === 0 ? (
