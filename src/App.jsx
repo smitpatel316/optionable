@@ -152,33 +152,33 @@ export default function App() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-100 dark:bg-slate-900 p-4 md:p-8">
+            <div className="min-h-screen bg-background p-4 md:p-8">
                 <div className="max-w-7xl mx-auto space-y-6">
                     {/* Header skeleton */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 animate-pulse">
+                    <div className="bg-card p-6 rounded-lg border border-border animate-pulse">
                         <div className="flex justify-between items-center">
                             <div className="space-y-2">
-                                <div className="h-6 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
-                                <div className="h-4 w-48 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                                <div className="h-6 w-32 bg-secondary rounded"></div>
+                                <div className="h-4 w-48 bg-secondary rounded"></div>
                             </div>
                             <div className="flex gap-2">
-                                <div className="h-10 w-20 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
-                                <div className="h-10 w-24 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+                                <div className="h-10 w-20 bg-secondary rounded-lg"></div>
+                                <div className="h-10 w-24 bg-secondary rounded-lg"></div>
                             </div>
                         </div>
                     </div>
                     {/* KPI cards skeleton */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700 animate-pulse">
-                                <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-3"></div>
-                                <div className="h-8 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                            <div key={i} className="bg-card p-5 rounded-lg border border-border animate-pulse">
+                                <div className="h-4 w-24 bg-secondary rounded mb-3"></div>
+                                <div className="h-8 w-32 bg-secondary rounded"></div>
                             </div>
                         ))}
                     </div>
                     {/* Chart skeleton */}
-                    <div className="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700 animate-pulse">
-                        <div className="h-64 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                    <div className="bg-card p-5 rounded-lg border border-border animate-pulse">
+                        <div className="h-64 bg-secondary rounded"></div>
                     </div>
                 </div>
             </div>
@@ -186,14 +186,14 @@ export default function App() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-100 dark:bg-slate-900 p-4 md:p-8 font-sans text-slate-800 dark:text-slate-200 transition-colors">
+        <div className="min-h-screen bg-background p-4 md:p-8 font-sans text-foreground transition-colors">
             <div className="max-w-7xl mx-auto space-y-6">
 
                 {/* Error Banner */}
                 {error && (
-                    <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg flex items-center justify-between">
+                    <div className="bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 px-4 py-3 rounded-lg flex items-center justify-between">
                         <span>{error}</span>
-                        <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 dark:hover:text-red-300">
+                        <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-600 dark:hover:text-red-300">
                             <X className="w-4 h-4" />
                         </button>
                     </div>

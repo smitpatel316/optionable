@@ -10,11 +10,11 @@ const formatCurrency = (value) => {
 };
 
 const typeColors = {
-    deposit: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    withdrawal: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    dividend: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    deposit: 'bg-success/15 text-emerald-700 dark:bg-success/15 dark:text-emerald-400',
+    withdrawal: 'bg-rose-500/15 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
+    dividend: 'bg-muted text-foreground dark:bg-muted dark:text-foreground',
     interest: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    fee: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
+    fee: 'bg-muted text-foreground dark:bg-secondary dark:text-foreground',
 };
 
 export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showToast, selectedAccountId, accounts, itemsPerPage }) => {
@@ -65,16 +65,16 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
         : transactions.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Fund Journal</h3>
+        <div className="bg-card rounded-lg shadow-sm border border-border">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-foreground">Fund Journal</h3>
                 <div className="flex items-center gap-3">
-                    <span className="text-xs text-slate-400 font-mono bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
+                    <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded">
                         {transactions.length} transactions
                     </span>
                     <button
                         onClick={() => { setEditingTransaction(null); setShowModal(true); }}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
                         title="Add transaction"
                     >
                         <Plus className="w-4 h-4" />
@@ -84,47 +84,47 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
             </div>
 
             {transactions.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 dark:text-slate-500">
+                <div className="p-8 text-center text-muted-foreground">
                     No transactions yet. Add deposits, withdrawals, dividends, and other cash flows.
                 </div>
             ) : (
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-                                <th className="text-left px-5 py-3 text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase">Date</th>
-                                <th className="text-left px-5 py-3 text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase">Type</th>
-                                <th className="text-right px-5 py-3 text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase">Amount</th>
-                                <th className="text-left px-5 py-3 text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase">Description</th>
-                                <th className="text-right px-5 py-3 text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase">Actions</th>
+                            <tr className="border-b border-border bg-muted">
+                                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Date</th>
+                                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Type</th>
+                                <th className="text-right px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Amount</th>
+                                <th className="text-left px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Description</th>
+                                <th className="text-right px-5 py-3 text-xs text-muted-foreground font-semibold uppercase">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                        <tbody className="divide-y divide-border">
                             {paginatedTransactions.map(txn => (
-                                <tr key={txn.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                    <td className="px-5 py-3 text-slate-700 dark:text-slate-300">{txn.date}</td>
+                                <tr key={txn.id} className="hover:bg-accent dark:hover:bg-accent/30 transition-colors">
+                                    <td className="px-5 py-3 text-foreground">{txn.date}</td>
                                     <td className="px-5 py-3">
                                         <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium capitalize ${typeColors[txn.type] || ''}`}>
                                             {txn.type}
                                         </span>
                                     </td>
-                                    <td className="px-5 py-3 text-right font-mono text-slate-900 dark:text-white">
+                                    <td className="px-5 py-3 text-right font-mono text-foreground">
                                         {formatCurrency(txn.amount)}
                                     </td>
-                                    <td className="px-5 py-3 text-slate-500 dark:text-slate-400 max-w-[250px] truncate">
+                                    <td className="px-5 py-3 text-muted-foreground max-w-[250px] truncate">
                                         {txn.description || '—'}
                                     </td>
                                     <td className="px-5 py-3 text-right">
                                         <div className="flex items-center justify-end gap-1">
                                             <button
                                                 onClick={() => handleEdit(txn)}
-                                                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 rounded transition-colors"
+                                                className="p-1.5 text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground hover:bg-accent dark:hover:bg-accent rounded transition-colors"
                                             >
                                                 <Pencil className="w-3.5 h-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(txn.id)}
-                                                className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
+                                                className="p-1.5 text-muted-foreground hover:text-rose-600 dark:hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>
@@ -139,15 +139,15 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="p-4 border-t border-border flex items-center justify-between bg-muted/50">
+                    <div className="text-sm text-muted-foreground">
                         Showing {((safePage - 1) * itemsPerPage) + 1} – {Math.min(safePage * itemsPerPage, transactions.length)} of {transactions.length}
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={safePage === 1}
-                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 rounded-lg border border-border text-muted-foreground hover:bg-accent dark:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -157,8 +157,8 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
                                     key={page}
                                     onClick={() => setCurrentPage(page)}
                                     className={`w-8 h-8 rounded-lg text-sm font-medium ${page === safePage
-                                        ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
-                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                        ? 'bg-primary dark:bg-primary text-white'
+                                        : 'text-muted-foreground hover:bg-accent dark:hover:bg-accent'
                                     }`}
                                 >
                                     {page}
@@ -168,7 +168,7 @@ export const FundJournal = ({ transactions, onCreate, onUpdate, onDelete, showTo
                         <button
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={safePage === totalPages}
-                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 rounded-lg border border-border text-muted-foreground hover:bg-accent dark:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>

@@ -46,10 +46,10 @@ export const AnalyticsView = ({ accountId }) => {
     useEffect(() => { load(); }, [load]);
 
     if (loading && !risk) {
-        return <div className="text-slate-400 text-sm py-8 text-center">Loading analytics…</div>;
+        return <div className="text-muted-foreground text-sm py-8 text-center">Loading analytics…</div>;
     }
     if (error) {
-        return <div className="text-red-500 text-sm py-8 text-center">Analytics unavailable: {error}</div>;
+        return <div className="text-rose-500 text-sm py-8 text-center">Analytics unavailable: {error}</div>;
     }
 
     return (

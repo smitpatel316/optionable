@@ -71,18 +71,18 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
-            <div className="modal-enter bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm w-full max-w-xl overflow-hidden my-8">
-                <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+            <div className="modal-enter bg-card rounded-lg border border-border shadow-sm w-full max-w-xl overflow-hidden my-8">
+                <div className="p-5 border-b border-border flex justify-between items-center bg-muted/50">
                     <div className="flex items-center gap-2">
                         {isSelling
-                            ? <TrendingDown className="w-5 h-5 text-red-500" />
+                            ? <TrendingDown className="w-5 h-5 text-rose-500" />
                             : <TrendingUp className="w-5 h-5 text-emerald-500" />
                         }
-                        <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+                        <h2 className="text-lg font-bold text-foreground">
                             {isSelling ? `Sell ${editingStock?.ticker}` : editingStock ? 'Edit Stock' : 'Buy Stock'}
                         </h2>
                     </div>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                    <button onClick={onClose} className="text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -91,25 +91,25 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
                     {isSelling ? (
                         <>
                             {/* Selling context */}
-                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                            <div className="bg-rose-500/10 border border-rose-500/30 rounded-lg p-4">
                                 <div className="grid grid-cols-3 gap-3 text-sm">
                                     <div>
-                                        <span className="text-red-600 dark:text-red-400 text-xs uppercase font-semibold">Ticker</span>
-                                        <p className="font-bold text-red-900 dark:text-red-300">{editingStock?.ticker}</p>
+                                        <span className="text-rose-600 dark:text-rose-400 text-xs uppercase font-semibold">Ticker</span>
+                                        <p className="font-bold text-rose-600 dark:text-rose-400">{editingStock?.ticker}</p>
                                     </div>
                                     <div>
-                                        <span className="text-red-600 dark:text-red-400 text-xs uppercase font-semibold">Available</span>
-                                        <p className="font-bold text-red-900 dark:text-red-300">{editingStock?.shares} shares</p>
+                                        <span className="text-rose-600 dark:text-rose-400 text-xs uppercase font-semibold">Available</span>
+                                        <p className="font-bold text-rose-600 dark:text-rose-400">{editingStock?.shares} shares</p>
                                     </div>
                                     <div>
-                                        <span className="text-red-600 dark:text-red-400 text-xs uppercase font-semibold">Cost Basis</span>
-                                        <p className="font-bold text-red-900 dark:text-red-300">${editingStock?.costBasis}</p>
+                                        <span className="text-rose-600 dark:text-rose-400 text-xs uppercase font-semibold">Cost Basis</span>
+                                        <p className="font-bold text-rose-600 dark:text-rose-400">${editingStock?.costBasis}</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Shares to Sell *</label>
+                                    <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Shares to Sell *</label>
                                     <input
                                         type="number"
                                         min="1"
@@ -117,36 +117,36 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
                                         step="1"
                                         value={formData.sharesToSell || ''}
                                         onChange={(e) => setFormData(prev => ({ ...prev, sharesToSell: e.target.value }))}
-                                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-red-500 bg-card dark:bg-secondary text-foreground"
                                         required
                                     />
                                     {isPartialSell && (
-                                        <p className="text-[10px] text-amber-600 mt-1">
+                                        <p className="text-[10px] text-foreground mt-1">
                                             {editingStock.shares - sharesToSell} shares will remain
                                         </p>
                                     )}
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Sale Date *</label>
+                                    <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Sale Date *</label>
                                     <input
                                         type="date"
                                         value={formData.soldDate || ''}
                                         onChange={(e) => setFormData(prev => ({ ...prev, soldDate: e.target.value }))}
-                                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-red-500 bg-card dark:bg-secondary text-foreground"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-red-500 dark:text-red-400 uppercase mb-1">Sale Price *</label>
+                                    <label className="block text-xs font-semibold text-rose-500 dark:text-rose-400 uppercase mb-1">Sale Price *</label>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-2 text-slate-400">$</span>
+                                        <span className="absolute left-3 top-2 text-muted-foreground">$</span>
                                         <input
                                             type="number"
                                             step="0.01"
                                             min="0"
                                             value={formData.salePrice || ''}
                                             onChange={(e) => setFormData(prev => ({ ...prev, salePrice: e.target.value }))}
-                                            className="w-full pl-7 pr-3 py-2 border border-red-200 dark:border-red-700 rounded-lg focus:ring-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                                            className="w-full pl-7 pr-3 py-2 border border-rose-500/30 dark:border-rose-500/30 rounded-lg focus:ring-rose-500 bg-card dark:bg-secondary text-foreground"
                                             placeholder="Per share"
                                             required
                                         />
@@ -154,12 +154,12 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
                                 </div>
                             </div>
                             {formData.salePrice && editingStock && sharesToSell > 0 && (
-                                <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg border border-slate-100 dark:border-slate-600 text-right">
-                                    <span className="text-xs text-slate-400 uppercase mr-2">P/L:</span>
-                                    <span className={`font-mono font-bold ${(Number(formData.salePrice) - editingStock.costBasis) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                <div className="bg-muted dark:bg-muted/50 p-3 rounded-lg border border-border dark:border-border text-right">
+                                    <span className="text-xs text-muted-foreground uppercase mr-2">P/L:</span>
+                                    <span className={`font-mono font-bold ${(Number(formData.salePrice) - editingStock.costBasis) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                         ${((Number(formData.salePrice) - editingStock.costBasis) * sharesToSell).toFixed(2)}
                                     </span>
-                                    <span className="text-xs text-slate-400 ml-2">
+                                    <span className="text-xs text-muted-foreground ml-2">
                                         ({sharesToSell} shares x ${(Number(formData.salePrice) - editingStock.costBasis).toFixed(2)})
                                     </span>
                                 </div>
@@ -170,11 +170,11 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
                             {/* Buy / Edit form */}
                             {needsAccountPicker && (
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Account *</label>
+                                    <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Account *</label>
                                     <select
                                         value={formData.accountId}
                                         onChange={(e) => setFormData(prev => ({ ...prev, accountId: e.target.value }))}
-                                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-card dark:bg-secondary text-foreground"
                                         required
                                     >
                                         <option value="">Select account...</option>
@@ -185,73 +185,73 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
                                 </div>
                             )}
                             <div>
-                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Ticker *</label>
+                                <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Ticker *</label>
                                 <input
                                     type="text"
                                     value={formData.ticker || ''}
                                     onChange={(e) => setFormData(prev => ({ ...prev, ticker: e.target.value.toUpperCase() }))}
                                     placeholder="e.g. AAPL"
-                                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 uppercase bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                                    className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring uppercase bg-card dark:bg-secondary text-foreground"
                                     required
                                 />
                             </div>
 
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Shares *</label>
+                                    <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Shares *</label>
                                     <input
                                         type="number"
                                         min="1"
                                         step="1"
                                         value={formData.shares || ''}
                                         onChange={(e) => setFormData(prev => ({ ...prev, shares: e.target.value }))}
-                                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-card dark:bg-secondary text-foreground"
                                         required
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase mb-1">Cost Basis ($) *</label>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-2 text-slate-400">$</span>
+                                        <span className="absolute left-3 top-2 text-muted-foreground">$</span>
                                         <input
                                             type="number"
                                             step="0.01"
                                             min="0"
                                             value={formData.costBasis || ''}
                                             onChange={(e) => setFormData(prev => ({ ...prev, costBasis: e.target.value }))}
-                                            className="w-full pl-7 pr-3 py-2 border border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-emerald-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                                            className="w-full pl-7 pr-3 py-2 border border-emerald-500/30 dark:border-emerald-700 rounded-lg focus:ring-emerald-500 bg-card dark:bg-secondary text-foreground"
                                             placeholder="Per share"
                                             required
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Acquired Date *</label>
+                                    <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Acquired Date *</label>
                                     <input
                                         type="date"
                                         value={formData.acquiredDate || ''}
                                         onChange={(e) => setFormData(prev => ({ ...prev, acquiredDate: e.target.value }))}
-                                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                                        className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-card dark:bg-secondary text-foreground"
                                         required
                                     />
                                 </div>
                             </div>
 
                             {totalCost > 0 && (
-                                <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg border border-slate-100 dark:border-slate-600 text-right">
-                                    <span className="text-xs text-slate-400 uppercase mr-2">Total Cost:</span>
-                                    <span className="font-mono font-bold text-slate-700 dark:text-slate-200">${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <div className="bg-muted dark:bg-muted/50 p-3 rounded-lg border border-border dark:border-border text-right">
+                                    <span className="text-xs text-muted-foreground uppercase mr-2">Total Cost:</span>
+                                    <span className="font-mono font-bold text-foreground">${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             )}
 
                             <div>
-                                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Notes</label>
+                                <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Notes</label>
                                 <textarea
                                     value={formData.notes || ''}
                                     onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                                     rows={2}
                                     placeholder="Optional notes about this purchase..."
-                                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white resize-none"
+                                    className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card dark:bg-secondary text-foreground resize-none"
                                 />
                             </div>
                         </>
@@ -261,17 +261,17 @@ export const StockModal = ({ isOpen, onClose, onSave, editingStock, isSelling, a
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-700"
+                            className="flex-1 px-4 py-2 border border-border rounded-lg text-foreground font-medium hover:bg-accent dark:hover:bg-accent"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={!isValid}
-                            className={`flex-1 px-4 py-2 rounded-lg font-semibold text-white disabled:bg-slate-300 dark:disabled:bg-slate-600 ${
+                            className={`flex-1 px-4 py-2 rounded-lg font-semibold text-white disabled:bg-secondary dark:disabled:bg-slate-600 ${
                                 isSelling
-                                    ? 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600'
-                                    : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600'
+                                    ? 'bg-destructive hover:bg-destructive/90 dark:bg-destructive dark:hover:bg-destructive/90'
+                                    : 'bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90'
                             }`}
                         >
                             {isSelling

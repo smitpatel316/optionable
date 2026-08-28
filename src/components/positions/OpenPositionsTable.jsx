@@ -37,19 +37,19 @@ const fmtAsOf = (updatedAt) => {
 };
 
 const TYPE_STYLE = {
-    CSP: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+    CSP: 'bg-rose-500/15 dark:bg-red-900/40 text-rose-600 dark:text-rose-400',
     CC: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-    SGOV: 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400',
-    STOCK: 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400',
-    OPT: 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400',
+    SGOV: 'bg-muted text-muted-foreground',
+    STOCK: 'bg-muted text-muted-foreground',
+    OPT: 'bg-muted text-muted-foreground',
 };
 
 const fmtPct = (value, goodWhenPositive = true) => {
-    if (value == null) return <span className="text-slate-300 dark:text-slate-600">—</span>;
+    if (value == null) return <span className="text-muted-foreground dark:text-muted-foreground">—</span>;
     const v = Number(value);
     const good = goodWhenPositive ? v >= 0 : v > 0;
     return (
-        <span className={`font-mono ${good ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+        <span className={`font-mono ${good ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
             {v > 0 ? '+' : ''}{v.toFixed(1)}%
         </span>
     );
@@ -60,12 +60,12 @@ const fmtPct = (value, goodWhenPositive = true) => {
 // server-cached 10 min). Green = roll pays you, red = roll costs you.
 // The table's P/L column is the "close now" answer; these answer "+1/+2wk?".
 const RollChips = ({ whatIf }) => {
-    if (!whatIf) return <span className="text-slate-300 dark:text-slate-600">—</span>;
-    if (whatIf.error) return <span className="text-slate-300 dark:text-slate-600" title={whatIf.error}>—</span>;
+    if (!whatIf) return <span className="text-muted-foreground dark:text-muted-foreground">—</span>;
+    if (whatIf.error) return <span className="text-muted-foreground dark:text-muted-foreground" title={whatIf.error}>—</span>;
     const chip = (label, roll, weeks) => {
         if (!roll) {
             return (
-                <span key={label} className="inline-block text-[11px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500"
+                <span key={label} className="inline-block text-[11px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
                     title={`No listed ${weeks}wk-out expiry to roll into on Yahoo chains`}>
                     {label} —
                 </span>
@@ -76,7 +76,7 @@ const RollChips = ({ whatIf }) => {
         return (
             <span
                 key={label}
-                className={`inline-block text-[11px] font-mono px-1.5 py-0.5 rounded ${good ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}
+                className={`inline-block text-[11px] font-mono px-1.5 py-0.5 rounded ${good ? 'bg-emerald-500/10 dark:bg-success/15 text-emerald-700 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}
                 title={`Roll to ${roll.to}: indicative ${good ? 'credit' : 'debit'} (sell new at bid − buy back at ask)`}
             >
                 {label} {good ? '+' : '−'}{formatCurrency(Math.abs(v))}
@@ -101,20 +101,20 @@ const PositionRow = ({ p, onPayoff, whatIfs }) => {
     const dteHot = p.dte != null && p.dte < 7;
     const plDollars = p.unrealizedPL != null ? Number(p.unrealizedPL) : null;
     return (
-        <tr className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
-            <td className="px-3 py-2 font-semibold text-slate-700 dark:text-slate-200">
+        <tr className="hover:bg-accent dark:hover:bg-accent/50">
+            <td className="px-3 py-2 font-semibold text-foreground">
                 {label}
                 {p.rollsUsed != null && (
-                    <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-mono"
+                    <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-muted dark:bg-amber-900/40 text-foreground dark:text-foreground font-mono"
                         title={`Rolled ${p.rollsUsed} of ${p.rollsMax ?? 2} allowed times`}>
                         {p.rollsUsed}/{p.rollsMax ?? 2}
                     </span>
                 )}
                 {(p.type === 'CSP' || p.type === 'CC') && p.breakEven != null && (
-                    <div className="text-xs font-normal font-mono text-slate-400 dark:text-slate-500 mt-0.5">
+                    <div className="text-xs font-normal font-mono text-muted-foreground mt-0.5">
                         BE {formatCurrency(p.breakEven)}
                         {p.distToBePct != null && (
-                            <span className={Number(p.distToBePct) < 0 ? 'text-red-500 dark:text-red-400' : ''}
+                            <span className={Number(p.distToBePct) < 0 ? 'text-rose-500 dark:text-rose-400' : ''}
                                 title={`Underlying last ~${formatCurrency(p.underlyingLast)} at push time — ${Number(p.distToBePct) < 0 ? 'past' : 'away from'} break-even`}>
                                 {` · ${Number(p.distToBePct) > 0 ? '+' : ''}${Number(p.distToBePct).toFixed(1)}% to BE`}
                             </span>
@@ -127,18 +127,18 @@ const PositionRow = ({ p, onPayoff, whatIfs }) => {
                     {p.type === 'SGOV' ? 'SGOV · cash sweep' : p.type}
                 </span>
             </td>
-            <td className={`px-3 py-2 text-center font-mono ${dteHot ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-slate-600 dark:text-slate-300'}`}>
+            <td className={`px-3 py-2 text-center font-mono ${dteHot ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
                 {p.dte != null ? `${p.dte}d` : '—'}
             </td>
-            <td className="px-3 py-2 text-right font-mono text-slate-600 dark:text-slate-300">
+            <td className="px-3 py-2 text-right font-mono text-muted-foreground">
                 {p.entryPrice != null ? formatCurrency(p.entryPrice) : '—'}
             </td>
-            <td className="px-3 py-2 text-right font-mono text-slate-600 dark:text-slate-300">
+            <td className="px-3 py-2 text-right font-mono text-muted-foreground">
                 {p.currentPrice != null ? formatCurrency(p.currentPrice) : '—'}
             </td>
             <td className="px-3 py-2 text-right">
-                {plDollars == null ? <span className="text-slate-300 dark:text-slate-600">—</span> : (
-                    <span className={`font-mono ${plDollars < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                {plDollars == null ? <span className="text-muted-foreground dark:text-muted-foreground">—</span> : (
+                    <span className={`font-mono ${plDollars < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                         {plDollars < 0 ? '-' : '+'}{formatCurrency(Math.abs(plDollars))}
                     </span>
                 )}
@@ -146,8 +146,8 @@ const PositionRow = ({ p, onPayoff, whatIfs }) => {
             <td className="px-3 py-2 text-right">{fmtPct(p.unrealizedPLpct)}</td>
             <td className="px-3 py-2 text-right">
                 {p.otmPct == null
-                    ? <span className="text-slate-300 dark:text-slate-600">—</span>
-                    : <span className={`font-mono ${Number(p.otmPct) < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                    ? <span className="text-muted-foreground dark:text-muted-foreground">—</span>
+                    : <span className={`font-mono ${Number(p.otmPct) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground'}`}>
                         {Number(p.otmPct) < 0 ? 'ITM ' : ''}{Math.abs(Number(p.otmPct)).toFixed(1)}%
                     </span>}
             </td>
@@ -160,7 +160,7 @@ const PositionRow = ({ p, onPayoff, whatIfs }) => {
                 {(p.type === 'CSP' || p.type === 'CC') && (
                     <button
                         onClick={() => onPayoff(p)}
-                        className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                        className="text-muted-foreground hover:text-foreground dark:hover:text-foreground p-1 rounded hover:bg-accent"
                         title="Payoff at expiry"
                     >
                         <BarChart3 className="w-4 h-4" />
@@ -232,31 +232,31 @@ export const OpenPositionsTable = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-slate-50/50 dark:bg-slate-800/50">
-                <h3 className="font-semibold text-slate-700 dark:text-slate-200">Open Positions</h3>
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+            <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/50">
+                <h3 className="font-semibold text-foreground">Open Positions</h3>
                 {asOf && (
-                    <span className="text-xs text-slate-400 dark:text-slate-500">as of {asOf}</span>
+                    <span className="text-xs text-muted-foreground">as of {asOf}</span>
                 )}
             </div>
 
             {showExpiring && (
-                <div className="px-4 py-2 border-b border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-900/20 flex items-center gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <div className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+                <div className="px-4 py-2 border-b border-border/60 bg-muted flex items-center gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-foreground shrink-0" />
+                    <div className="text-xs text-foreground dark:text-foreground font-medium">
                         Expiring ≤7d: {expiring.map((e) => `${e.underlying} ${fmtStrike(e.strike, e.type === 'CSP' ? 'P' : 'C')}${e.expiry ? ` ${fmtExpiry(e.expiry)}` : ''} (${e.dte}d)`).join(' · ')}
                     </div>
                     <button onClick={dismissExpiring} aria-label="Dismiss expiring notice"
-                        className="ml-auto text-amber-500 hover:text-amber-700 dark:hover:text-amber-200 p-0.5 rounded">
+                        className="ml-auto text-amber-500 hover:text-foreground dark:hover:text-amber-200 p-0.5 rounded">
                         <X className="w-3.5 h-3.5" />
                     </button>
                 </div>
             )}
 
             {queue.length > 0 && (
-                <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-700 space-y-0.5">
+                <div className="px-4 py-2 border-b border-border space-y-0.5">
                     {queue.map((q, i) => (
-                        <div key={q.symbol || i} className="text-xs text-slate-400 dark:text-slate-500">
+                        <div key={q.symbol || i} className="text-xs text-muted-foreground">
                             Queued: {q.underlying} {fmtStrike(q.strike, 'P')}{q.expiry ? ` ${fmtExpiry(q.expiry)}` : ''}
                             {q.need != null ? ` — waiting on funding (${formatCurrency(q.need)})` : ' — waiting on funding'}
                         </div>
@@ -265,13 +265,13 @@ export const OpenPositionsTable = () => {
             )}
 
             {positions.length === 0 ? (
-                <div className="p-4 text-center text-sm text-slate-400 dark:text-slate-500 border-dashed">
+                <div className="p-4 text-center text-sm text-muted-foreground border-dashed">
                     No open positions reported yet — updates at 10:05 / 1:05 / 3:05 ET on trading days.
                 </div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left [&_th]:border-r [&_th]:border-slate-200 [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-slate-100 [&_td:last-child]:border-r-0 dark:[&_th]:border-slate-600 dark:[&_td]:border-slate-700">
-                        <thead className="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
+                    <table className="w-full text-sm text-left [&_th]:border-r [&_th]:border-border [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-border [&_td:last-child]:border-r-0 dark:[&_th]:border-slate-600 dark:[&_td]:border-slate-700">
+                        <thead className="text-xs text-muted-foreground uppercase bg-muted border-b border-border">
                             <tr>
                                 <th className="px-3 py-2 font-semibold">Position</th>
                                 <th className="px-3 py-2 font-semibold text-center">Type</th>
@@ -285,7 +285,7 @@ export const OpenPositionsTable = () => {
                                 <th className="px-2 py-2 font-semibold text-center"><span className="sr-only">Payoff</span></th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
+                        <tbody className="divide-y divide-slate-50 dark:divide-border">
                             {positions.map((p) => <PositionRow key={p.symbol} p={p} onPayoff={setPayoffPosition} whatIfs={whatIfs} />)}
                         </tbody>
                     </table>

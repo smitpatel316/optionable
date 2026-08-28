@@ -9,23 +9,23 @@ const formatCurrency = (value) => {
 };
 
 const KPICard = ({ label, value, icon: Icon, color, subtext, valueColor }) => (
-    <div className="bg-white dark:bg-slate-800 p-5 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+    <div className="bg-card p-5 rounded-lg shadow-sm border border-border">
         <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+            <p className="text-sm text-muted-foreground">{label}</p>
             <Icon className={`w-5 h-5 ${color}`} />
         </div>
-        <p className={`text-2xl font-bold ${valueColor || 'text-slate-900 dark:text-white'}`}>
+        <p className={`text-2xl font-bold ${valueColor || 'text-foreground'}`}>
             {value}
         </p>
-        {subtext && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{subtext}</p>}
+        {subtext && <p className="text-xs text-muted-foreground mt-1">{subtext}</p>}
     </div>
 );
 
 const pnlColor = (val) => {
     const num = Number(val);
     if (num > 0) return 'text-emerald-600 dark:text-emerald-400';
-    if (num < 0) return 'text-red-600 dark:text-red-400';
-    return 'text-slate-900 dark:text-white';
+    if (num < 0) return 'text-rose-600 dark:text-rose-400';
+    return 'text-foreground';
 };
 
 export const PortfolioDashboard = ({ stats }) => {
@@ -37,14 +37,14 @@ export const PortfolioDashboard = ({ stats }) => {
         <div>
             <div className="flex items-center gap-2 mb-4">
                 <PieChart className="w-5 h-5 text-indigo-500" />
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Portfolio</h2>
+                <h2 className="text-lg font-bold text-foreground">Portfolio</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 <KPICard
                     label="Deposited"
                     value={formatCurrency(stats.netDeposited)}
                     icon={Landmark}
-                    color="text-slate-600 dark:text-slate-400"
+                    color="text-muted-foreground"
                     subtext={stats.totalWithdrawals > 0 ? `${formatCurrency(stats.totalWithdrawals)} withdrawn` : undefined}
                 />
                 <KPICard
@@ -59,7 +59,7 @@ export const PortfolioDashboard = ({ stats }) => {
                     label="Rate of Return"
                     value={`${(stats.rateOfReturn || 0).toFixed(1)}%`}
                     icon={Percent}
-                    color="text-indigo-600 dark:text-indigo-400"
+                    color="text-foreground"
                     valueColor={pnlColor(stats.rateOfReturn)}
                     subtext="Based on realized P/L"
                 />
@@ -75,7 +75,7 @@ export const PortfolioDashboard = ({ stats }) => {
                     label="Stock Gains"
                     value={formatCurrency(stats.stockGains)}
                     icon={TrendingUp}
-                    color="text-purple-600 dark:text-purple-400"
+                    color="text-muted-foreground"
                     valueColor={pnlColor(stats.stockGains)}
                     subtext={`${stats.closedStockPositions || 0} closed positions`}
                 />
@@ -83,7 +83,7 @@ export const PortfolioDashboard = ({ stats }) => {
                     label="Income"
                     value={formatCurrency(income)}
                     icon={Coins}
-                    color="text-amber-600 dark:text-amber-400"
+                    color="text-foreground"
                     subtext={[
                         stats.dividends > 0 ? `${formatCurrency(stats.dividends)} div` : null,
                         stats.interest > 0 ? `${formatCurrency(stats.interest)} int` : null,

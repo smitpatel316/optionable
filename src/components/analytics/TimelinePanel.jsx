@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CalendarRange } from 'lucide-react';
 import { tradesApi } from '../../services/api';
+import { Card, CardContent } from '@/components/ui/card';
 
 // Wheel-cycle timeline (fork addition 2026-08-28): one Gantt lane per wheel
 // cycle (a put chain root and everyone attached to it), bars from open to
@@ -75,7 +76,7 @@ export const TimelinePanel = ({ accountId }) => {
     }, [accountId]);
 
     if (error) {
-        return <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-5 text-sm text-red-500">Timeline unavailable: {error}</div>;
+        return <Card><CardContent className="p-5 text-sm text-rose-500">Timeline unavailable: {error}</CardContent></Card>;
     }
 
     const span = scale && scale.maxDay > scale.minDay ? scale.maxDay - scale.minDay : 1;
@@ -85,16 +86,16 @@ export const TimelinePanel = ({ accountId }) => {
     const fmtDay = (ms) => new Date(ms).toISOString().slice(0, 10).slice(5);
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-5">
-            <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-1">
-                <CalendarRange className="w-4 h-4 text-slate-400" />
+        <Card><CardContent className="p-5">
+            <h3 className="font-semibold text-foreground flex items-center gap-2 mb-1">
+                <CalendarRange className="w-4 h-4 text-muted-foreground" />
                 Wheel Timeline
             </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">One lane per ticker; bars run open → close, open bars stretch to today.</p>
+            <p className="text-xs text-muted-foreground mb-4">One lane per ticker; bars run open → close, open bars stretch to today.</p>
             {!lanes ? (
-                <div className="h-32 bg-slate-100 dark:bg-slate-700 rounded animate-pulse"></div>
+                <div className="h-32 bg-muted rounded animate-pulse"></div>
             ) : lanes.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">No option trades yet.</p>
+                <p className="text-sm text-muted-foreground">No option trades yet.</p>
             ) : (
                 <>
                     <div className="overflow-x-auto">
@@ -104,9 +105,9 @@ export const TimelinePanel = ({ accountId }) => {
                                 const open = lane.legs.some((l) => l.status === 'Open');
                                 return (
                                     <div key={lane.id} className="flex items-center gap-2 mb-1.5">
-                                        <div className="w-14 shrink-0 text-xs font-mono font-medium text-slate-600 dark:text-slate-300 text-right">
+                                        <div className="w-14 shrink-0 text-xs font-mono font-medium text-muted-foreground text-right">
                                             {lane.ticker}
-                                            <span className="text-slate-400 dark:text-slate-500"> ×{lane.legs.length}</span>
+                                            <span className="text-muted-foreground"> ×{lane.legs.length}</span>
                                         </div>
                                         <div className="relative flex-1 h-5">
                                             {lane.legs.map((leg) => {
@@ -120,7 +121,7 @@ export const TimelinePanel = ({ accountId }) => {
                                                 return (
                                                     <div
                                                         key={leg.id}
-                                                        className={`absolute top-1 h-3 rounded-sm ${isCC ? 'bg-emerald-500/80' : 'bg-indigo-500/80'} ${live ? 'ring-1 ring-offset-1 ring-indigo-300 dark:ring-indigo-600 dark:ring-offset-slate-800' : ''}`}
+                                                        className={`absolute top-1 h-3 rounded-sm ${isCC ? 'border border-dashed border-foreground/60 bg-transparent' : 'bg-foreground/50 border border-foreground/60'} ${live ? 'ring-1 ring-offset-1 ring-ring dark:ring-offset-card' : ''}`}
                                                         style={{ left: `${left}%`, width: `${width}%` }}
                                                         title={`${leg.type} $${leg.strike / 100} · ${(leg.openedDate || '').slice(0, 10)} → ${live ? 'today' : (leg.closedDate || leg.expirationDate || '').slice(0, 10)} (${statusLabel[leg.status] || leg.status})`}
                                                     />
@@ -132,7 +133,7 @@ export const TimelinePanel = ({ accountId }) => {
                                                 return (
                                                     <div
                                                         key={`mark-${leg.id}`}
-                                                        className="absolute w-2 h-2 rotate-45 bg-amber-500 -top-0.5"
+                                                        className="absolute w-2 h-2 rotate-45 bg-secondary -top-0.5"
                                                         style={{ left: `calc(${pct(m)}% - 4px)` }}
                                                         title={`${leg.status === 'Assigned' ? 'Assigned shares' : 'Called away'} ${(leg.closedDate || '').slice(0, 10)}`}
                                                     />
@@ -144,7 +145,7 @@ export const TimelinePanel = ({ accountId }) => {
                             })}
                             <div className="flex items-center gap-2 mt-1">
                                 <div className="w-14 shrink-0"></div>
-                                <div className="relative flex-1 h-4 text-[10px] text-slate-400 dark:text-slate-500">
+                                <div className="relative flex-1 h-4 text-[10px] text-muted-foreground">
                                     {ticks.map((t, i) => (
                                         <span key={i} className="absolute" style={{ left: `${pct(t)}%`, transform: i === 0 ? 'none' : 'translateX(-50%)' }}>
                                             {fmtDay(t)}
@@ -154,14 +155,14 @@ export const TimelinePanel = ({ accountId }) => {
                             </div>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-slate-500 dark:text-slate-400">
-                        <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-indigo-500/80"></span>Put leg</span>
-                        <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-emerald-500/80"></span>Call leg</span>
-                        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rotate-45 bg-amber-500"></span>Shares change hands</span>
-                        <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-indigo-500/80 ring-1 ring-indigo-300 dark:ring-indigo-600"></span>Live</span>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-foreground/50"></span>Put leg</span>
+                        <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm border border-dashed border-foreground/60"></span>Call leg</span>
+                        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rotate-45 bg-secondary"></span>Shares change hands</span>
+                        <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded-sm bg-foreground/50 ring-1 ring-ring"></span>Live</span>
                     </div>
                 </>
             )}
-        </div>
+        </CardContent></Card>
     );
 };

@@ -26,24 +26,24 @@ const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         const day = payload[0].payload;
         return (
-            <div className="bg-white dark:bg-slate-800 p-3 rounded-md shadow-sm border border-slate-200 dark:border-slate-700 text-sm">
-                <p className="font-semibold text-slate-700 dark:text-slate-200 mb-1">{label}</p>
+            <div className="bg-card p-3 rounded-md shadow-sm border border-border text-sm">
+                <p className="font-semibold text-foreground mb-1">{label}</p>
                 <p className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#10b981' }} />
-                    <span className="text-slate-500 dark:text-slate-400">Deployed:</span>
+                    <span className="text-muted-foreground">Deployed:</span>
                     <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
                         ${day.deployed.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </span>
                 </p>
                 <p className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: '#94a3b8' }} />
-                    <span className="text-slate-500 dark:text-slate-400">Idle (cash + SGOV):</span>
-                    <span className="font-mono font-medium text-slate-600 dark:text-slate-300">
+                    <span className="text-muted-foreground">Idle (cash + SGOV):</span>
+                    <span className="font-mono font-medium text-muted-foreground">
                         ${day.idle.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </span>
                 </p>
-                <div className="border-t border-slate-200 dark:border-slate-600 mt-1.5 pt-1.5">
-                    <p className="font-mono font-bold text-slate-700 dark:text-slate-200">
+                <div className="border-t border-border mt-1.5 pt-1.5">
+                    <p className="font-mono font-bold text-foreground">
                         {day.pct}% deployed of ${day.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
                 </div>
@@ -61,19 +61,19 @@ export const CapitalDeploymentChart = ({ data, darkMode }) => {
     const tickColor = darkMode ? '#94a3b8' : '#64748b';
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-5">
+        <div className="bg-card rounded-lg shadow-sm border border-border p-5">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <Gauge className="w-4 h-4 text-slate-400" />
-                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    <Gauge className="w-4 h-4 text-muted-foreground" />
+                    <h3 className="text-sm font-semibold text-foreground">
                         Capital Deployment
                     </h3>
                 </div>
                 <div className="text-right">
-                    <span className={`text-lg font-bold font-mono ${latest.pct >= 50 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                    <span className={`text-lg font-bold font-mono ${latest.pct >= 50 ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
                         {latest.pct}%
                     </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 ml-1.5">deployed</span>
+                    <span className="text-xs text-muted-foreground ml-1.5">deployed</span>
                 </div>
             </div>
             <ResponsiveContainer width="100%" height={240}>
@@ -113,7 +113,7 @@ export const CapitalDeploymentChart = ({ data, darkMode }) => {
                     />
                 </AreaChart>
             </ResponsiveContainer>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+            <p className="text-xs text-muted-foreground mt-2">
                 Deployed = capital securing open puts/calls plus stock held from assignments. Idle cash sits in SGOV earning yield until a trade needs it.
             </p>
         </div>

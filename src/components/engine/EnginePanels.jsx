@@ -46,14 +46,14 @@ const Freshness = ({ updatedAt }) => {
     if (!age) return null;
     const stale = updatedAt && (Date.now() - new Date(updatedAt.includes('T') ? updatedAt : updatedAt.replace(' ', 'T') + 'Z').getTime()) > 26 * 3600 * 1000;
     return (
-        <span className={`text-xs ${stale ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-slate-400 dark:text-slate-500'}`}>
+        <span className={`text-xs ${stale ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
             Last engine run: {age}{stale ? ' (stale)' : ''}
         </span>
     );
 };
 
 const EmptyState = ({ message }) => (
-    <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-dashed border-slate-300 dark:border-slate-600 text-center text-sm text-slate-400 dark:text-slate-500">
+    <div className="bg-card p-4 rounded-lg shadow-sm border border-dashed border-border text-center text-sm text-muted-foreground">
         {message}
     </div>
 );
@@ -62,10 +62,10 @@ const EmptyState = ({ message }) => (
 
 const CapitalRow = ({ label, value, sub, warn }) => (
     <div className="flex items-baseline justify-between py-1.5">
-        <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</span>
+        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
         <div className="text-right">
-            <span className={`font-mono font-semibold ${warn ? 'text-amber-600 dark:text-amber-400' : 'text-slate-700 dark:text-slate-200'}`}>{value}</span>
-            {sub && <div className="text-xs text-slate-400 dark:text-slate-500">{sub}</div>}
+            <span className={`font-mono font-semibold ${warn ? 'text-foreground' : 'text-foreground'}`}>{value}</span>
+            {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
         </div>
     </div>
 );
@@ -79,27 +79,27 @@ const CapitalCard = ({ snapshot, updatedAt }) => {
     const optionsBp = snapshot.optionsBuyingPower ?? 0;
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="p-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-                <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">Capital &amp; Collateral</span>
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+            <div className="p-3 border-b border-border bg-muted/50 flex items-center justify-between">
+                <span className="font-semibold text-sm text-foreground">Capital &amp; Collateral</span>
                 <Freshness updatedAt={updatedAt} />
             </div>
             <div className="p-4 space-y-3">
                 <div>
                     <div className="flex items-baseline justify-between mb-1">
-                        <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Risk deployed</span>
-                        <span className="font-mono text-sm font-semibold text-slate-700 dark:text-slate-200">
+                        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Risk deployed</span>
+                        <span className="font-mono text-sm font-semibold text-foreground">
                             {formatCurrency(riskUsed)} / {formatCurrency(riskCap)}
                         </span>
                     </div>
-                    <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
                         <div
-                            className={`h-full rounded-full ${riskPct > 80 ? 'bg-red-500' : riskPct > 55 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                            className={`h-full rounded-full ${riskPct > 80 ? 'bg-destructive' : riskPct > 55 ? 'bg-secondary' : 'bg-success'}`}
                             style={{ width: `${riskPct}%` }}
                         />
                     </div>
                 </div>
-                <div className="divide-y divide-slate-50 dark:divide-slate-700">
+                <div className="divide-y divide-slate-50 dark:divide-border">
                     <CapitalRow label="Cash" value={formatCurrency(snapshot.cash ?? 0)} />
                     <CapitalRow
                         label="Options BP"
@@ -119,12 +119,12 @@ const CapitalCard = ({ snapshot, updatedAt }) => {
                 {(snapshot.regime || snapshot.vix != null) && (
                     <div className="flex gap-2 pt-1">
                         {snapshot.regime && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-foreground font-medium">
                                 {snapshot.regime}
                             </span>
                         )}
                         {snapshot.vix != null && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-mono">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">
                                 VIX {Number(snapshot.vix).toFixed(1)}
                             </span>
                         )}
@@ -138,10 +138,10 @@ const CapitalCard = ({ snapshot, updatedAt }) => {
 // ---------- Scan funnel ----------
 
 const ACTION_STYLE = {
-    sold: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300',
-    skipped: 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400',
-    blocked: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-    none: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300',
+    sold: 'bg-success/15 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300',
+    skipped: 'bg-muted text-muted-foreground',
+    blocked: 'bg-rose-500/15 dark:bg-red-900/40 text-rose-600 dark:text-rose-400',
+    none: 'bg-muted dark:bg-amber-900/40 text-foreground dark:text-foreground',
 };
 
 const actionBadge = (sym) => {
@@ -174,15 +174,15 @@ const ScanFunnel = ({ scanRun, updatedAt }) => {
     }
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="p-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-                <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">
+        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+            <div className="p-3 border-b border-border bg-muted/50 flex items-center justify-between">
+                <span className="font-semibold text-sm text-foreground">
                     Scan funnel{scanRun.slot ? ` · ${scanRun.slot}` : ''}
                 </span>
                 <Freshness updatedAt={updatedAt} />
             </div>
             <div className="p-4 space-y-3">
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     <span><span className="font-mono font-semibold">{symbols.length}</span> in watchlist</span>
                     <span>→ <span className="font-mono font-semibold">{passed}</span> passed filters</span>
                     <span>→ <span className="font-mono font-semibold">{considered}</span> contracts considered</span>
@@ -192,7 +192,7 @@ const ScanFunnel = ({ scanRun, updatedAt }) => {
                 {Object.keys(rejectTotals).length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                         {Object.entries(rejectTotals).sort((a, b) => b[1] - a[1]).map(([reason, count]) => (
-                            <span key={reason} className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-mono">
+                            <span key={reason} className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">
                                 {reason}: {count}
                             </span>
                         ))}
@@ -200,18 +200,18 @@ const ScanFunnel = ({ scanRun, updatedAt }) => {
                 )}
 
                 {scanRun.note && (
-                    <div className="text-xs text-slate-500 dark:text-slate-400">{scanRun.note}</div>
+                    <div className="text-xs text-muted-foreground">{scanRun.note}</div>
                 )}
 
                 <div className="overflow-y-auto max-h-64">
                     <table className="w-full text-sm">
-                        <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
+                        <tbody className="divide-y divide-slate-50 dark:divide-border">
                             {symbols.map((s) => {
                                 const badge = actionBadge(s);
                                 return (
-                                    <tr key={s.symbol} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                                        <td className="px-2 py-1.5 font-semibold text-slate-700 dark:text-slate-200 w-16">{s.symbol}</td>
-                                        <td className="px-2 py-1.5 text-right font-mono text-xs text-slate-400 dark:text-slate-500 w-24">
+                                    <tr key={s.symbol} className="hover:bg-accent dark:hover:bg-accent/50">
+                                        <td className="px-2 py-1.5 font-semibold text-foreground w-16">{s.symbol}</td>
+                                        <td className="px-2 py-1.5 text-right font-mono text-xs text-muted-foreground w-24">
                                             {!s.dropReason && s.contractsConsidered != null ? `${s.contractsConsidered} ctr` : ''}
                                         </td>
                                         <td className="px-2 py-1.5 text-right">

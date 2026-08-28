@@ -25,18 +25,18 @@ const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload;
         return (
-            <div className="bg-white dark:bg-slate-800 p-3 rounded-md shadow-sm border border-slate-200 dark:border-slate-700 text-sm">
-                <p className="font-semibold text-slate-700 dark:text-slate-200">{data.tickers}</p>
-                <p className="text-slate-500 dark:text-slate-400">{formatDate(data.fullDate)}</p>
+            <div className="bg-card p-3 rounded-md shadow-sm border border-border text-sm">
+                <p className="font-semibold text-foreground">{data.tickers}</p>
+                <p className="text-muted-foreground">{formatDate(data.fullDate)}</p>
                 {data.dayBooked !== 0 && (
-                    <p className={`font-mono font-medium ${data.dayBooked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <p className={`font-mono font-medium ${data.dayBooked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                         Day cash: {formatCurrency(data.dayBooked)}
                     </p>
                 )}
-                <p className={`font-mono font-bold ${data.booked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                <p className={`font-mono font-bold ${data.booked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                     Booked (cash): {formatCurrency(data.booked)}
                 </p>
-                <p className="font-mono font-medium text-slate-500 dark:text-slate-400">
+                <p className="font-mono font-medium text-muted-foreground">
                     Finalized: {formatCurrency(data.finalized)}
                 </p>
             </div>
@@ -57,30 +57,30 @@ export const PnLChart = ({
     const chartColor = totalPnL >= 0 ? "#10b981" : "#ef4444";
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-5">
+        <div className="bg-card rounded-lg shadow-sm border border-border p-5">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-slate-400" />
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-muted-foreground" />
                     Cumulative P/L
                 </h3>
                 <div className="flex items-center gap-3">
                     {/* Time Period Selector */}
-                    <div className="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-0.5">
+                    <div className="flex bg-muted rounded-lg p-0.5">
                         {PERIODS.map(period => (
                             <button
                                 key={period.key}
                                 onClick={() => onPeriodChange(period.key)}
                                 className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
                                     chartPeriod === period.key
-                                        ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
-                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                                        ? 'bg-card dark:bg-secondary text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground'
                                 }`}
                             >
                                 {period.label}
                             </button>
                         ))}
                     </div>
-                    <span className={`text-sm font-mono font-bold ${totalPnL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                    <span className={`text-sm font-mono font-bold ${totalPnL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                         {formatCurrency(totalPnL)}
                     </span>
                 </div>

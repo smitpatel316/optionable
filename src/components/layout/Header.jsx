@@ -1,5 +1,9 @@
 import React from 'react';
-import { Activity, Download, Upload, Plus, Settings, ChevronDown, TrendingUp } from 'lucide-react';
+import { Activity, Download, Upload, Plus, Settings, TrendingUp } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 export const Header = ({
     onExport,
@@ -14,80 +18,58 @@ export const Header = ({
     newTradeIcon: NewTradeIcon
 }) => {
     return (
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Activity className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+        <Card className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 md:p-6">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 min-w-0">
+                <div className="min-w-0">
+                    <h1 className="text-2xl font-bold text-foreground flex flex-wrap items-center gap-2">
+                        <Activity className="w-6 h-6 text-foreground shrink-0" />
                         Optionable
                         {version && (
-                            <span className="text-xs font-normal text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
+                            <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded">
                                 v{version}
                             </span>
                         )}
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Documenting the Wheel Strategy</p>
+                    <p className="text-muted-foreground text-sm mt-1">Documenting the Wheel Strategy</p>
                 </div>
 
-                {/* Account Selector */}
+                {/* Account Selector — own row on narrow screens */}
                 {accounts && accounts.length > 0 && (
-                    <div className="relative">
-                        <select
-                            value={selectedAccountId ?? ''}
-                            onChange={(e) => onAccountChange(e.target.value ? Number(e.target.value) : null)}
-                            className="appearance-none bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 pl-3 pr-8 py-2 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        >
-                            <option value="">All Accounts</option>
+                    <Select
+                        value={selectedAccountId == null ? 'all' : String(selectedAccountId)}
+                        onValueChange={(v) => onAccountChange(v === 'all' ? null : Number(v))}
+                    >
+                        <SelectTrigger className="w-full sm:w-52 bg-muted border-border">
+                            <SelectValue placeholder="All Accounts" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Accounts</SelectItem>
                             {accounts.map(account => (
-                                <option key={account.id} value={account.id}>{account.name}</option>
+                                <SelectItem key={account.id} value={String(account.id)}>{account.name}</SelectItem>
                             ))}
-                        </select>
-                        <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                    </div>
+                        </SelectContent>
+                    </Select>
                 )}
             </div>
-            <div className="mt-4 md:mt-0 flex items-center gap-2">
-                {/* Settings Button */}
-                <button
-                    onClick={onOpenSettings}
-                    className="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 px-3 py-2 rounded-lg font-medium transition-colors"
-                    title="Settings"
-                >
-                    <Settings className="w-4 h-4" />
+            <div className="flex items-center gap-2 flex-wrap">
+                <Button variant="secondary" onClick={onOpenSettings} title="Settings">
+                    <Settings />
                     <span className="hidden sm:inline">Settings</span>
-                </button>
-
-                {/* Export Button */}
-                <button
-                    onClick={onExport}
-                    className="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 px-3 py-2 rounded-lg font-medium transition-colors"
-                    title="Export to CSV"
-                >
-                    <Download className="w-4 h-4" />
+                </Button>
+                <Button variant="secondary" onClick={onExport} title="Export to CSV">
+                    <Download />
                     <span className="hidden sm:inline">Export</span>
-                </button>
-
-                {/* Import Button */}
-                <label className="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 px-3 py-2 rounded-lg font-medium transition-colors cursor-pointer" title="Import from CSV">
-                    <Upload className="w-4 h-4" />
+                </Button>
+                <label className={cn(buttonVariants({ variant: 'secondary' }), 'cursor-pointer')} title="Import from CSV">
+                    <Upload />
                     <span className="hidden sm:inline">Import</span>
-                    <input
-                        type="file"
-                        accept=".csv"
-                        onChange={onImport}
-                        className="hidden"
-                    />
+                    <input type="file" accept=".csv" onChange={onImport} className="hidden" />
                 </label>
-
-                {/* New Trade / Buy Stock Button */}
-                <button
-                    onClick={onNewTrade}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                >
-                    {NewTradeIcon ? <NewTradeIcon className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                <Button onClick={onNewTrade}>
+                    {NewTradeIcon ? <NewTradeIcon /> : <Plus />}
                     {newTradeLabel || 'New Trade'}
-                </button>
+                </Button>
             </div>
-        </header>
+        </Card>
     );
 };
