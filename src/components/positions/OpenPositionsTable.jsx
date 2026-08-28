@@ -55,8 +55,46 @@ const fmtPct = (value, goodWhenPositive = true) => {
     );
 };
 
-const PositionRow = ({ p, onPayoff }) => {
+// Indicative roll credits (agamotto-inspired): sell the same strike ~1/2
+// weeks further out at bid, buy the live leg back at ask (Yahoo chains,
+// server-cached 10 min). Green = roll pays you, red = roll costs you.
+// The table's P/L column is the "close now" answer; these answer "+1/+2wk?".
+const RollChips = ({ whatIf }) => {
+    if (!whatIf) return <span className="text-slate-300 dark:text-slate-600">—</span>;
+    if (whatIf.error) return <span className="text-slate-300 dark:text-slate-600" title={whatIf.error}>—</span>;
+    const chip = (label, roll, weeks) => {
+        if (!roll) {
+            return (
+                <span key={label} className="inline-block text-[11px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500"
+                    title={`No listed ${weeks}wk-out expiry to roll into on Yahoo chains`}>
+                    {label} —
+                </span>
+            );
+        }
+        const v = roll.netCredit;
+        const good = v > 0;
+        return (
+            <span
+                key={label}
+                className={`inline-block text-[11px] font-mono px-1.5 py-0.5 rounded ${good ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}
+                title={`Roll to ${roll.to}: indicative ${good ? 'credit' : 'debit'} (sell new at bid − buy back at ask)`}
+            >
+                {label} {good ? '+' : '−'}{formatCurrency(Math.abs(v))}
+            </span>
+        );
+    };
+    return (
+        <div className="flex flex-wrap gap-1 justify-end">
+            {chip('+1wk', whatIf.roll1wk, '1')}
+            {chip('+2wk', whatIf.roll2wk, '2')}
+        </div>
+    );
+};
+
+const PositionRow = ({ p, onPayoff, whatIfs }) => {
     const optType = p.type === 'CSP' ? 'P' : p.type === 'CC' ? 'C' : '';
+    const rollKey = (p.type === 'CSP' || p.type === 'CC')
+        ? `${p.underlying}|${p.strike}|${p.expiry}|${p.type}` : null;
     const label = p.type === 'SGOV' || p.type === 'STOCK'
         ? `${p.underlying}${p.contracts ? ` ×${p.contracts}` : ''}`
         : `${p.underlying} ${fmtStrike(p.strike, optType)}${p.expiry ? ` ${fmtExpiry(p.expiry)}` : ''}`;
@@ -113,6 +151,11 @@ const PositionRow = ({ p, onPayoff }) => {
                         {Number(p.otmPct) < 0 ? 'ITM ' : ''}{Math.abs(Number(p.otmPct)).toFixed(1)}%
                     </span>}
             </td>
+            <td className="px-3 py-2 text-right">
+                {(p.type === 'CSP' || p.type === 'CC') && (
+                    <RollChips whatIf={rollKey ? whatIfs[rollKey] : undefined} />
+                )}
+            </td>
             <td className="px-2 py-2 text-center">
                 {(p.type === 'CSP' || p.type === 'CC') && (
                     <button
@@ -132,6 +175,7 @@ export const OpenPositionsTable = () => {
     const [data, setData] = useState(null);
     const [failed, setFailed] = useState(false);
     const [payoffPosition, setPayoffPosition] = useState(null);
+    const [whatIfs, setWhatIfs] = useState({});
     const [dismissedKey, setDismissedKey] = useState(() => {
         try { return localStorage.getItem('opt-expiring-dismiss'); } catch { return null; }
     });
@@ -148,11 +192,27 @@ export const OpenPositionsTable = () => {
         }
     }, []);
 
+    // Roll what-ifs live behind live option-chain quotes, so they load in the
+    // background without blocking the table (first call can take seconds).
+    const fetchWhatIfs = useCallback(async () => {
+        try {
+            const res = await fetch(`${API_URL}/analytics/roll-whatif`);
+            if (!res.ok) throw new Error('fetch failed');
+            const json = await res.json();
+            const rows = json.data?.rows || [];
+            const map = {};
+            for (const r of rows) map[r.key] = r;
+            setWhatIfs(map);
+        } catch { /* chips just stay empty */ }
+    }, []);
+
     useEffect(() => {
         fetchData();
+        fetchWhatIfs();
         const t = setInterval(fetchData, 60000);
-        return () => clearInterval(t);
-    }, [fetchData]);
+        const t2 = setInterval(fetchWhatIfs, 5 * 60000);
+        return () => { clearInterval(t); clearInterval(t2); };
+    }, [fetchData, fetchWhatIfs]);
 
     if (failed && !data) return null; // endpoint not deployed yet — stay invisible
 
@@ -221,11 +281,12 @@ export const OpenPositionsTable = () => {
                                 <th className="px-3 py-2 font-semibold text-right">P/L</th>
                                 <th className="px-3 py-2 font-semibold text-right">P/L %</th>
                                 <th className="px-3 py-2 font-semibold text-right">OTM</th>
+                                <th className="px-3 py-2 font-semibold text-right" title="Indicative net credit for rolling the same strike out ~1/+2 weeks (Yahoo quotes)">Roll?</th>
                                 <th className="px-2 py-2 font-semibold text-center"><span className="sr-only">Payoff</span></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
-                            {positions.map((p) => <PositionRow key={p.symbol} p={p} onPayoff={setPayoffPosition} />)}
+                            {positions.map((p) => <PositionRow key={p.symbol} p={p} onPayoff={setPayoffPosition} whatIfs={whatIfs} />)}
                         </tbody>
                     </table>
                 </div>

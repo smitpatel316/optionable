@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import YahooFinance from 'yahoo-finance2';
 import { db } from '../db/connection.js';
 
 // Advanced analytics (fork addition, 2026-08-28): portfolio Greeks & risk,
@@ -442,5 +443,134 @@ router.get('/cycles', (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to compute wheel cycles' });
     }
 });
+
+// ---------------- Roll what-if (agamotto-inspired) ----------------
+
+// Indicative net credit for rolling each open short option to the same strike
+// ~1 and ~2 weeks further out, from live Yahoo option chains: buy the live leg
+// back at the ask, sell the later-expiry leg at the bid (conservative sides).
+// The existing P/L column is the "close now" answer; these chips answer
+// "what if I roll instead". Quotes cached briefly; per-symbol failures leave
+// that position null instead of breaking the panel.
+
+const yahooFinance = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
+const ROLL_CACHE_TTL_MS = 10 * 60 * 1000;
+const chainCache = new Map(); // symbol -> { fetchedAt, expirations: Date[], legs: Map<iso, Map<strike, leg>> }
+
+const DAY_MS = 86400000;
+
+const strikeKey = (n) => Math.round(Number(n) * 100); // cents — avoids float keys
+
+async function getChains(symbol) {
+    const hit = chainCache.get(symbol);
+    if (hit && Date.now() - hit.fetchedAt < ROLL_CACHE_TTL_MS) return hit;
+    const root = await yahooFinance.options(symbol, {});
+    const expirations = (root.expirationDates || []).map((d) => new Date(d));
+    const entry = { fetchedAt: Date.now(), expirations, legs: new Map() };
+    chainCache.set(symbol, entry);
+    return entry;
+}
+
+async function getLeg(symbol, expiryDate, strike, optType /* 'put' | 'call' */) {
+    const chains = await getChains(symbol);
+    const iso = expiryDate.toISOString().slice(0, 10);
+    if (!chains.legs.has(iso)) {
+        const chain = await yahooFinance.options(symbol, { date: expiryDate });
+        const list = chain.options?.[0]?.[optType === 'put' ? 'puts' : 'calls'] || [];
+        const m = new Map();
+        for (const c of list) m.set(strikeKey(c.strike), { bid: c.bid, ask: c.ask, last: c.lastPrice });
+        chains.legs.set(iso, m);
+    }
+    return chains.legs.get(iso).get(strikeKey(strike)) || null;
+}
+
+// Nearest listed expiry in [target, target + 10 days]
+function nearestExpiry(expirations, targetMs) {
+    let best = null;
+    for (const e of expirations) {
+        const ms = e.getTime();
+        if (ms < targetMs || ms > targetMs + 10 * DAY_MS) continue;
+        if (!best || ms < best.getTime()) best = e;
+    }
+    return best;
+}
+
+// GET /api/analytics/roll-whatif — per open CSP/CC: indicative roll credits
+router.get('/roll-whatif', async (req, res) => {
+    try {
+        const { data: enginePositions } = getEngineBlob('positions');
+        let rows = [];
+        if (Array.isArray(enginePositions)) {
+            rows = enginePositions
+                .filter((p) => p.type === 'CSP' || p.type === 'CC')
+                .map((p) => ({
+                    underlying: p.underlying,
+                    type: p.type,
+                    strike: Number(p.strike),
+                    expiry: p.expiry,
+                    contracts: Number(p.contracts) || 1,
+                }));
+        } else {
+            rows = openTradesFor(req.query.accountId || null).map((t) => ({
+                underlying: t.ticker,
+                type: t.type,
+                strike: t.strike / 100,
+                expiry: t.expirationDate,
+                contracts: t.quantity,
+            }));
+        }
+
+        const results = [];
+        for (const p of rows) {
+            const base = {
+                key: `${p.underlying}|${p.strike}|${p.expiry}|${p.type}`,
+                underlying: p.underlying,
+                strike: p.strike,
+                expiry: p.expiry,
+                type: p.type,
+                roll1wk: null,
+                roll2wk: null,
+            };
+            try {
+                const optType = p.type === 'CC' ? 'call' : 'put';
+                const ownMs = dayMsUtc(p.expiry);
+                if (ownMs == null) throw new Error('no expiry');
+                const chains = await getChains(p.underlying);
+                const ownExpiry = (ms) => new Date(ms);
+                const own = await getLeg(p.underlying, ownExpiry(ownMs), p.strike, optType);
+                const buyBack = own?.ask ?? own?.last ?? null;
+                if (buyBack == null) throw new Error('no live quote for current leg');
+
+                for (const [weeks, slot] of [[1, 'roll1wk'], [2, 'roll2wk']]) {
+                    const target = ownMs + weeks * 7 * DAY_MS;
+                    const exp = nearestExpiry(chains.expirations, target);
+                    if (!exp) continue;
+                    const leg = await getLeg(p.underlying, exp, p.strike, optType);
+                    const sell = leg?.bid ?? leg?.last ?? null;
+                    if (sell == null) continue;
+                    base[slot] = {
+                        to: exp.toISOString().slice(0, 10),
+                        // + = cash in from the roll (sell later leg − buy back current)
+                        netCredit: Math.round((sell - buyBack) * 100 * p.contracts * 100) / 100,
+                    };
+                }
+            } catch (err) {
+                base.error = err.message == null ? 'quote fetch failed' : String(err.message).slice(0, 80);
+            }
+            results.push(base);
+        }
+
+        res.json({ success: true, data: { asOf: new Date().toISOString(), rows: results } });
+    } catch (error) {
+        console.error('Analytics roll-whatif failed:', error);
+        res.status(500).json({ success: false, error: 'Failed to compute roll what-ifs' });
+    }
+});
+
+function dayMsUtc(iso) {
+    if (!iso) return null;
+    const ms = new Date(`${String(iso).slice(0, 10)}T00:00:00Z`).getTime();
+    return isNaN(ms) ? null : ms;
+}
 
 export default router;
