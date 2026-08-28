@@ -14,12 +14,13 @@ const upsertStmt = () => db.prepare(`
     ON CONFLICT(key) DO UPDATE SET payload = excluded.payload, updated_at = CURRENT_TIMESTAMP
 `);
 
-// POST /api/engine/dashboard  { snapshot?: {...}, scanRun?: {...}, openPositions?: [...], fundingQueue?: [...] }
+// POST /api/engine/dashboard  { snapshot?: {...}, scanRun?: {...}, openPositions?: [...], fundingQueue?: [...], equityHistory?: [...], sgovHistory?: [...] }
 router.post('/dashboard', (req, res) => {
     try {
-        const { snapshot, scanRun, openPositions, fundingQueue } = req.body || {};
-        if (!snapshot && !scanRun && !Array.isArray(openPositions) && !Array.isArray(fundingQueue)) {
-            return apiResponse.error(res, 'Provide snapshot, scanRun, openPositions and/or fundingQueue', 400);
+        const { snapshot, scanRun, openPositions, fundingQueue, equityHistory, sgovHistory } = req.body || {};
+        if (!snapshot && !scanRun && !Array.isArray(openPositions) && !Array.isArray(fundingQueue)
+            && !Array.isArray(equityHistory) && !Array.isArray(sgovHistory)) {
+            return apiResponse.error(res, 'Provide snapshot, scanRun, openPositions, fundingQueue, equityHistory and/or sgovHistory', 400);
         }
         const upsert = upsertStmt();
         if (snapshot) upsert.run('snapshot', JSON.stringify(snapshot));
@@ -27,12 +28,18 @@ router.post('/dashboard', (req, res) => {
         // Arrays: replace wholesale each push (a closed position disappears by absence)
         if (Array.isArray(openPositions)) upsert.run('positions', JSON.stringify(openPositions));
         if (Array.isArray(fundingQueue)) upsert.run('fundingQueue', JSON.stringify(fundingQueue));
+        // History arrays travel with the push so the dashboard works wherever
+        // it is hosted (they used to live as files next to the engine only).
+        if (Array.isArray(equityHistory)) upsert.run('equityHistory', JSON.stringify(equityHistory));
+        if (Array.isArray(sgovHistory)) upsert.run('sgovHistory', JSON.stringify(sgovHistory));
         apiResponse.success(res, {
             stored: {
                 snapshot: !!snapshot,
                 scanRun: !!scanRun,
                 positions: Array.isArray(openPositions),
                 fundingQueue: Array.isArray(fundingQueue),
+                equityHistory: Array.isArray(equityHistory),
+                sgovHistory: Array.isArray(sgovHistory),
             },
         });
     } catch (error) {

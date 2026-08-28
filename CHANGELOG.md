@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.18.1
+
+### Fix: equity history lost after Pi migration (fork addition)
+
+- `POST /api/engine/dashboard` now also accepts `equityHistory` / `sgovHistory` arrays; the engine pushes them every run.
+- `/api/income/benchmark` + `/api/income` read the pushed history from the database first, with the legacy co-located file path as fallback. Fixes "Equity history not available yet" on hosts where the dashboard and engine are on different machines.
+
 ## v0.18.0
 
 ### Analytics tab — advanced wheel telemetry (fork additions, e2e-tested)

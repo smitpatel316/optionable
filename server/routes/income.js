@@ -22,10 +22,25 @@ const SGOV_SEC_YIELD = Number(process.env.SGOV_SEC_YIELD || 0.0506);
 const PRICE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 let spyPriceCache = new Map(); // date -> { price, fetchedAt }
 
+// Engine may push history with its dashboard snapshot (post-migration the
+// dashboard lives on a different host than the engine, so the on-disk file
+// path is Hatch-only). Prefer the pushed blob; fall back to the file for the
+// legacy co-located deployment.
+function readEngineBlob(key) {
+    try {
+        const row = db.prepare('SELECT payload FROM engine_dashboard WHERE key = ?').get(key);
+        if (!row) return null;
+        const parsed = JSON.parse(row.payload);
+        return Array.isArray(parsed) ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
 function readEquityHistory() {
     try {
-        if (!existsSync(EQUITY_HISTORY_PATH)) return [];
-        const raw = JSON.parse(readFileSync(EQUITY_HISTORY_PATH, 'utf8'));
+        const raw = readEngineBlob('equityHistory')
+            || (existsSync(EQUITY_HISTORY_PATH) ? JSON.parse(readFileSync(EQUITY_HISTORY_PATH, 'utf8')) : []);
         return raw
             .filter(e => e && e.t && typeof e.equity === 'number')
             .map(e => ({ t: e.t, date: e.t.slice(0, 10), equity: e.equity }));
@@ -64,8 +79,8 @@ async function getSpyLatest() {
 
 function readSgovHistory() {
     try {
-        if (!existsSync(SGOV_HISTORY_PATH)) return [];
-        const raw = JSON.parse(readFileSync(SGOV_HISTORY_PATH, 'utf8'));
+        const raw = readEngineBlob('sgovHistory')
+            || (existsSync(SGOV_HISTORY_PATH) ? JSON.parse(readFileSync(SGOV_HISTORY_PATH, 'utf8')) : []);
         return raw
             .filter(e => e && e.t && typeof e.shares === 'number')
             .map(e => ({ t: e.t, date: e.t.slice(0, 10), shares: e.shares, avg: e.avg }));
