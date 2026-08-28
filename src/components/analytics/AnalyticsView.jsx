@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { analyticsApi } from '../../services/api';
 import { RiskPanel } from './RiskPanel';
 import { ExposureLadder } from './ExposureLadder';
+import { AttributionPanel } from './AttributionPanel';
 
 // Analytics tab (fork addition 2026-08-28): advanced views derived server-side
 // from the trades table + engine-pushed positions blob. Fetches on mount and
@@ -10,6 +11,7 @@ import { ExposureLadder } from './ExposureLadder';
 export const AnalyticsView = ({ accountId }) => {
     const [risk, setRisk] = useState(null);
     const [exposure, setExposure] = useState(null);
+    const [attribution, setAttribution] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -17,12 +19,14 @@ export const AnalyticsView = ({ accountId }) => {
         setLoading(true);
         setError(null);
         try {
-            const [riskRes, exposureRes] = await Promise.all([
+            const [riskRes, exposureRes, attributionRes] = await Promise.all([
                 analyticsApi.getRisk(accountId),
                 analyticsApi.getExposure(accountId),
+                analyticsApi.getAttribution(accountId),
             ]);
             setRisk(riskRes.data);
             setExposure(exposureRes.data);
+            setAttribution(attributionRes.data);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -43,6 +47,7 @@ export const AnalyticsView = ({ accountId }) => {
         <div className="space-y-6">
             <RiskPanel risk={risk} />
             <ExposureLadder exposure={exposure} />
+            <AttributionPanel attribution={attribution} />
         </div>
     );
 };

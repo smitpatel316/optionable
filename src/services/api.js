@@ -265,4 +265,6 @@ export const analyticsApi = {
         request(`/analytics/risk${accountId ? `?accountId=${accountId}` : ''}`),
     getExposure: (accountId) =>
         request(`/analytics/exposure${accountId ? `?accountId=${accountId}` : ''}`),
+    getAttribution: (accountId) =>
+        request(`/analytics/attribution${accountId ? `?accountId=${accountId}` : ''}`),
 };

@@ -203,4 +203,90 @@ router.get('/exposure', (req, res) => {
     }
 });
 
+// ---------------- P/L attribution by underlying ----------------
+
+// GET /api/analytics/attribution?accountId=N
+router.get('/attribution', (req, res) => {
+    try {
+        const accountId = req.query.accountId || null;
+        const params = [];
+        let sql = 'SELECT * FROM trades';
+        if (accountId) { sql += ' WHERE accountId = ?'; params.push(accountId); }
+        const all = db.prepare(sql).all(...params);
+
+        const { data: enginePositions, updatedAt } = getEngineBlob('positions');
+        const bySymbol = {};
+        if (Array.isArray(enginePositions)) {
+            for (const p of enginePositions) bySymbol[`${p.underlying}|${Number(p.strike)}|${p.expiry}`] = p;
+        }
+
+        const per = new Map();
+        const bump = (t) => {
+            const row = per.get(t.ticker) || { ticker: t.ticker, realized: 0, wins: 0, losses: 0, closedCount: 0, closedCollateral: 0, openCount: 0, openCollateral: 0, openUnrealized: 0, premiumCollected: 0 };
+            per.set(t.ticker, row);
+            return row;
+        };
+
+        for (const t of all) {
+            const row = bump(t);
+            const dollarsStrike = t.strike / 100;
+            const collateral = dollarsStrike * 100 * t.quantity;
+
+            if (t.status === 'Open') {
+                row.openCount += 1;
+                row.openCollateral += collateral;
+                const mark = bySymbol[`${t.ticker}|${dollarsStrike}|${t.expirationDate}`];
+                const remaining = mark ? (Number(mark.currentPrice) || 0) * 100 * (mark.contracts || 1) : (t.entryPrice / 100) * 100 * t.quantity;
+                row.openUnrealized += (t.entryPrice / 100) * 100 * t.quantity - remaining;
+            }
+
+            // Realized leg P/L — same formula + raw-cent units as server/routes/stats.js
+            if (t.closePrice != null && (t.status === 'Closed' || t.status === 'Expired' || t.status === 'Assigned' || t.status === 'Rolled')) {
+                const isShort = t.type === 'CSP' || t.type === 'CC';
+                const diff = isShort ? t.entryPrice - t.closePrice : t.closePrice - t.entryPrice;
+                const pnl = (diff * t.quantity * 100 - (t.commission || 0)) / 100;
+                row.realized += pnl;
+                row.closedCollateral += collateral;
+                if (t.status !== 'Rolled') {
+                    row.closedCount += 1;
+                    if (pnl > 0) row.wins += 1;
+                    else if (pnl < 0) row.losses += 1;
+                }
+            }
+            if (t.entryPrice) row.premiumCollected += (t.entryPrice / 100) * 100 * t.quantity;
+        }
+
+        const round2 = (v) => Math.round(v * 100) / 100;
+        const rows = [...per.values()]
+            .map((r) => ({
+                ticker: r.ticker,
+                realized: round2(r.realized),
+                wins: r.wins,
+                losses: r.losses,
+                closedCount: r.closedCount,
+                winRate: r.closedCount ? round2((r.wins / r.closedCount) * 100) : null,
+                weightedRoi: r.closedCollateral ? round2((r.realized / r.closedCollateral) * 100) : null,
+                openCount: r.openCount,
+                openCollateral: round2(r.openCollateral),
+                openUnrealized: round2(r.openUnrealized),
+                premiumCollected: round2(r.premiumCollected),
+            }))
+            .sort((a, b) => b.realized - a.realized);
+
+        res.json({
+            success: true,
+            data: {
+                asOf: updatedAt,
+                rows,
+                totalRealized: round2(rows.reduce((s, r) => s + r.realized, 0)),
+                totalOpenCollateral: round2(rows.reduce((s, r) => s + r.openCollateral, 0)),
+                totalOpenUnrealized: round2(rows.reduce((s, r) => s + r.openUnrealized, 0)),
+            },
+        });
+    } catch (error) {
+        console.error('Analytics attribution failed:', error);
+        res.status(500).json({ success: false, error: 'Failed to compute attribution' });
+    }
+});
+
 export default router;

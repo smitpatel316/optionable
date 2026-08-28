@@ -71,6 +71,6 @@ await req('POST', '/engine/dashboard', {
 
 // 5. XOM shares from an earlier assignment — powers the CC combined payoff view
 await req('POST', '/positions', { ticker: 'XOM', shares: 100, costBasis: 95, acquiredDate: '2026-08-20', accountId: account.id })
-    .catch((e) => console.log('warn: positions seed:', e.message));
+    .catch((e) => console.log('positions seed failed:', e.message));
 
 console.log('seeded: 4 open (3 CSP + 1 CC), 1 roll chain, 4 closed, XOM lot, engine dashboard push');
