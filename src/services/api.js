@@ -258,3 +258,9 @@ export const portfolioApi = {
     }
 };
 
+// Analytics API (fork addition 2026-08-28): portfolio Greeks/risk, expiry
+// ladder, wheel cycles, P/L attribution. All read-only, accountId optional.
+export const analyticsApi = {
+    getRisk: (accountId) =>
+        request(`/analytics/risk${accountId ? `?accountId=${accountId}` : ''}`),
+};

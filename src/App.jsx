@@ -31,7 +31,8 @@ import {
     PositionsTable,
     SettingsModal,
     PortfolioView,
-    IncomeView
+    IncomeView,
+    AnalyticsView
 } from './components';
 
 import { API_URL } from './utils/constants';
@@ -271,6 +272,11 @@ export default function App() {
                         {/* Summary Cards */}
                         <SummaryCards stats={stats} />
                     </>
+                )}
+
+                {/* Analytics View (custom fork addition: Greeks/risk, expiry ladder, cycles, attribution) */}
+                {portfolioModeEnabled && activeTab === 'analytics' && (
+                    <AnalyticsView accountId={selectedAccountId} />
                 )}
 
                 {/* Income View (custom fork addition: income breakdown + SPY benchmark) */}

@@ -37,3 +37,6 @@ export { IncomeSourcesChart } from './portfolio/IncomeSourcesChart';
 
 // Income Components
 export { IncomeView } from './income/IncomeView';
+
+// Analytics Components (fork addition 2026-08-28)
+export { AnalyticsView } from './analytics/AnalyticsView';
