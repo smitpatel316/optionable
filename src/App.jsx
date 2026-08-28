@@ -288,7 +288,6 @@ export default function App() {
                 {portfolioModeEnabled && activeTab === 'portfolio' && (
                     <PortfolioView
                         portfolioStats={portfolio.portfolioStats}
-                        monthlyData={portfolio.monthlyData}
                         deploymentData={portfolio.deploymentData}
                         darkMode={darkMode}
                         fundTransactions={portfolio.fundTransactions}

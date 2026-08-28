@@ -32,7 +32,6 @@ export { FundJournal } from './portfolio/FundJournal';
 export { FundTransactionModal } from './portfolio/FundTransactionModal';
 export { StocksTable } from './portfolio/StocksTable';
 export { StockModal } from './portfolio/StockModal';
-export { MonthlyPLChart } from './portfolio/MonthlyPLChart';
 export { IncomeSourcesChart } from './portfolio/IncomeSourcesChart';
 
 // Income Components

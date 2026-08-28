@@ -1,6 +1,5 @@
 import React from 'react';
 import { PortfolioDashboard } from './PortfolioDashboard';
-import { MonthlyPLChart } from './MonthlyPLChart';
 import { IncomeSourcesChart } from './IncomeSourcesChart';
 import { CapitalDeploymentChart } from './CapitalDeploymentChart';
 import { FundJournal } from './FundJournal';
@@ -8,7 +7,6 @@ import { StocksTable } from './StocksTable';
 
 export const PortfolioView = ({
     portfolioStats,
-    monthlyData,
     deploymentData,
     darkMode,
     fundTransactions,
@@ -29,8 +27,7 @@ export const PortfolioView = ({
         <div className="space-y-6">
             <PortfolioDashboard stats={portfolioStats} />
             <CapitalDeploymentChart data={deploymentData} darkMode={darkMode} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <MonthlyPLChart data={monthlyData} darkMode={darkMode} />
+            <div className="grid grid-cols-1 gap-6">
                 <IncomeSourcesChart stats={portfolioStats} />
             </div>
             <FundJournal
