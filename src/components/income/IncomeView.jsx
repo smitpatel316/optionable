@@ -15,22 +15,24 @@ import {
 } from 'recharts';
 import { API_URL } from '../../utils/constants';
 import { formatCurrency } from '../../utils/formatters';
+import { Card as UICard } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Card = ({ title, icon: Icon, children }) => (
-    <div className="bg-card rounded-lg shadow-sm border border-border p-5">
+    <UICard className="p-5">
         <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
             <Icon className="w-4 h-4 text-muted-foreground" />
             {title}
         </h3>
         {children}
-    </div>
+    </UICard>
 );
 
 const PremiumTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         const v = payload[0].value;
         return (
-            <div className="bg-card p-3 rounded-md shadow-sm border border-border text-sm">
+            <div className="bg-popover p-3 rounded-md shadow-md border border-border text-sm text-popover-foreground">
                 <p className="text-muted-foreground mb-1">{label}</p>
                 <p className={`font-mono font-medium ${v >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                     {formatCurrency(v)}
@@ -44,7 +46,7 @@ const PremiumTooltip = ({ active, payload, label }) => {
 const BenchmarkTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-card p-3 rounded-md shadow-sm border border-border text-sm">
+            <div className="bg-popover p-3 rounded-md shadow-md border border-border text-sm text-popover-foreground">
                 <p className="text-muted-foreground mb-1">{label}</p>
                 {payload.map(p => (
                     <p key={p.dataKey} className="font-mono font-medium" style={{ color: p.color }}>
@@ -97,7 +99,7 @@ export const IncomeView = ({ accountId, darkMode }) => {
         <>
             <Card title="Income Breakdown" icon={Landmark}>
                 {!income ? (
-                    <div className="h-24 bg-muted rounded animate-pulse"></div>
+                    <Skeleton className="h-24" />
                 ) : (
                     <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -125,8 +127,8 @@ export const IncomeView = ({ accountId, darkMode }) => {
                         {total > 0 && (
                             <div>
                                 <div className="flex h-3 rounded-full overflow-hidden bg-muted">
-                                    <div className="bg-primary" style={{ width: `${optionsPct}%` }} title={`Options ${optionsPct.toFixed(0)}%`}></div>
-                                    <div className="bg-success" style={{ width: `${sgovPct}%` }} title={`SGOV ${sgovPct.toFixed(0)}%`}></div>
+                                    <div className="bg-foreground/80" style={{ width: `${optionsPct}%` }} title={`Options ${optionsPct.toFixed(0)}%`}></div>
+                                    <div className="bg-foreground/30" style={{ width: `${sgovPct}%` }} title={`SGOV ${sgovPct.toFixed(0)}%`}></div>
                                 </div>
                                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
                                     <span>Options {optionsPct.toFixed(0)}%</span>
@@ -146,7 +148,7 @@ export const IncomeView = ({ accountId, darkMode }) => {
 
             <Card title="Premium by Month" icon={BarChart3}>
                 {!premiumMonthly ? (
-                    <div className="h-48 bg-muted rounded animate-pulse"></div>
+                    <Skeleton className="h-48" />
                 ) : premiumMonthly.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No closed option trades yet.</p>
                 ) : (
@@ -154,23 +156,23 @@ export const IncomeView = ({ accountId, darkMode }) => {
                         <div className="h-48">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={premiumMonthly} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? '#334155' : '#e2e8f0'} />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                                     <XAxis
                                         dataKey="month"
-                                        tick={{ fontSize: 11, fill: darkMode ? '#64748b' : '#94a3b8' }}
-                                        tickLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
-                                        axisLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                                        tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                                        tickLine={{ stroke: 'hsl(var(--border))' }}
+                                        axisLine={{ stroke: 'hsl(var(--border))' }}
                                     />
                                     <YAxis
-                                        tick={{ fontSize: 11, fill: darkMode ? '#64748b' : '#94a3b8' }}
-                                        tickLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
-                                        axisLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                                        tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                                        tickLine={{ stroke: 'hsl(var(--border))' }}
+                                        axisLine={{ stroke: 'hsl(var(--border))' }}
                                         tickFormatter={(v) => `$${v}`}
                                     />
-                                    <Tooltip content={<PremiumTooltip />} cursor={{ fill: darkMode ? '#1e293b' : '#f1f5f9' }} />
+                                    <Tooltip content={<PremiumTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
                                     <Bar dataKey="premium" radius={[4, 4, 0, 0]}>
                                         {premiumMonthly.map((m) => (
-                                            <Cell key={m.month} fill={m.premium >= 0 ? '#10b981' : '#ef4444'} />
+                                            <Cell key={m.month} fill={m.premium >= 0 ? '#10b981' : '#f43f5e'} />
                                         ))}
                                     </Bar>
                                 </BarChart>
@@ -185,7 +187,7 @@ export const IncomeView = ({ accountId, darkMode }) => {
 
             <Card title={benchmark?.ticker ? `Wheel vs ${benchmark.ticker} Buy & Hold` : 'Wheel vs S&P 500'} icon={Scale}>
                 {!benchmark ? (
-                    <div className="h-64 bg-muted rounded animate-pulse"></div>
+                    <Skeleton className="h-64" />
                 ) : !benchmark.ready ? (
                     <p className="text-sm text-muted-foreground">{benchmark.message || 'Not enough history yet.'}</p>
                 ) : (
@@ -207,24 +209,24 @@ export const IncomeView = ({ accountId, darkMode }) => {
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={benchmark.points} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#334155' : '#e2e8f0'} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                                     <XAxis
                                         dataKey="date"
-                                        tick={{ fontSize: 11, fill: darkMode ? '#64748b' : '#94a3b8' }}
-                                        tickLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
-                                        axisLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                                        tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                                        tickLine={{ stroke: 'hsl(var(--border))' }}
+                                        axisLine={{ stroke: 'hsl(var(--border))' }}
                                     />
                                     <YAxis
                                         domain={['auto', 'auto']}
-                                        tick={{ fontSize: 11, fill: darkMode ? '#64748b' : '#94a3b8' }}
-                                        tickLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
-                                        axisLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                                        tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                                        tickLine={{ stroke: 'hsl(var(--border))' }}
+                                        axisLine={{ stroke: 'hsl(var(--border))' }}
                                         tickFormatter={(v) => `$${(v / 1000).toFixed(1)}k`}
                                     />
                                     <Tooltip content={<BenchmarkTooltip />} />
                                     <Legend />
-                                    <Line type="monotone" dataKey="wheel" name="Wheel" stroke="#6366f1" strokeWidth={2} dot={false} />
-                                    <Line type="monotone" dataKey="spy" name={benchmark.ticker} stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 3" dot={false} />
+                                    <Line type="monotone" dataKey="wheel" name="Wheel" stroke="hsl(var(--foreground))" strokeWidth={2} dot={false} />
+                                    <Line type="monotone" dataKey="spy" name={benchmark.ticker} stroke="hsl(var(--muted-foreground))" strokeWidth={2} strokeDasharray="5 3" dot={false} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>

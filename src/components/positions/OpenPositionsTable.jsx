@@ -3,6 +3,11 @@ import { BarChart3, AlertTriangle, X } from 'lucide-react';
 import { API_URL } from '../../utils/constants';
 import { formatCurrency } from '../../utils/formatters';
 import { PayoffModal } from '../analytics/PayoffModal';
+import { Card } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { pnlTone } from '@/lib/pnl';
+import { cn } from '@/lib/utils';
 
 // Open Positions table (2026-08-22): live-ish view of the wheel's open CSPs,
 // covered calls, and the SGOV cash sweep. Fed by wheel-stack's end-of-run push
@@ -36,20 +41,22 @@ const fmtAsOf = (updatedAt) => {
     });
 };
 
-const TYPE_STYLE = {
-    CSP: 'bg-rose-500/15 dark:bg-red-900/40 text-rose-600 dark:text-rose-400',
-    CC: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-    SGOV: 'bg-muted text-muted-foreground',
-    STOCK: 'bg-muted text-muted-foreground',
-    OPT: 'bg-muted text-muted-foreground',
+// Monochrome type badges: hue carries P/L only. Filled = put leg, outline =
+// call leg, muted = stock/cash positions.
+const TYPE_VARIANT = {
+    CSP: 'secondary',
+    CC: 'outline',
+    SGOV: 'muted',
+    STOCK: 'muted',
+    OPT: 'muted',
 };
 
 const fmtPct = (value, goodWhenPositive = true) => {
-    if (value == null) return <span className="text-muted-foreground dark:text-muted-foreground">—</span>;
+    if (value == null) return <span className="text-muted-foreground">—</span>;
     const v = Number(value);
     const good = goodWhenPositive ? v >= 0 : v > 0;
     return (
-        <span className={`font-mono ${good ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+        <span className={cn('font-mono', pnlTone(good ? 1 : -1))}>
             {v > 0 ? '+' : ''}{v.toFixed(1)}%
         </span>
     );
@@ -60,8 +67,8 @@ const fmtPct = (value, goodWhenPositive = true) => {
 // server-cached 10 min). Green = roll pays you, red = roll costs you.
 // The table's P/L column is the "close now" answer; these answer "+1/+2wk?".
 const RollChips = ({ whatIf }) => {
-    if (!whatIf) return <span className="text-muted-foreground dark:text-muted-foreground">—</span>;
-    if (whatIf.error) return <span className="text-muted-foreground dark:text-muted-foreground" title={whatIf.error}>—</span>;
+    if (!whatIf) return <span className="text-muted-foreground">—</span>;
+    if (whatIf.error) return <span className="text-muted-foreground" title={whatIf.error}>—</span>;
     const chip = (label, roll, weeks) => {
         if (!roll) {
             return (
@@ -76,7 +83,7 @@ const RollChips = ({ whatIf }) => {
         return (
             <span
                 key={label}
-                className={`inline-block text-[11px] font-mono px-1.5 py-0.5 rounded ${good ? 'bg-emerald-500/10 dark:bg-success/15 text-emerald-700 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}
+                className={`inline-block text-[11px] font-mono px-1.5 py-0.5 rounded ${good ? 'bg-emerald-500/10 dark:bg-emerald-400/15 text-emerald-700 dark:text-emerald-400' : 'bg-rose-500/10 dark:bg-rose-400/15 text-rose-600 dark:text-rose-400'}`}
                 title={`Roll to ${roll.to}: indicative ${good ? 'credit' : 'debit'} (sell new at bid − buy back at ask)`}
             >
                 {label} {good ? '+' : '−'}{formatCurrency(Math.abs(v))}
@@ -101,11 +108,11 @@ const PositionRow = ({ p, onPayoff, whatIfs }) => {
     const dteHot = p.dte != null && p.dte < 7;
     const plDollars = p.unrealizedPL != null ? Number(p.unrealizedPL) : null;
     return (
-        <tr className="hover:bg-accent dark:hover:bg-accent/50">
-            <td className="px-3 py-2 font-semibold text-foreground">
+        <TableRow>
+            <TableCell className="font-semibold text-foreground">
                 {label}
                 {p.rollsUsed != null && (
-                    <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-muted dark:bg-amber-900/40 text-foreground dark:text-foreground font-mono"
+                    <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-muted text-foreground font-mono"
                         title={`Rolled ${p.rollsUsed} of ${p.rollsMax ?? 2} allowed times`}>
                         {p.rollsUsed}/{p.rollsMax ?? 2}
                     </span>
@@ -121,53 +128,53 @@ const PositionRow = ({ p, onPayoff, whatIfs }) => {
                         )}
                     </div>
                 )}
-            </td>
-            <td className="px-3 py-2 text-center">
-                <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${TYPE_STYLE[p.type] || TYPE_STYLE.STOCK}`}>
+            </TableCell>
+            <TableCell className="text-center">
+                <Badge variant={TYPE_VARIANT[p.type] || 'muted'}>
                     {p.type === 'SGOV' ? 'SGOV · cash sweep' : p.type}
-                </span>
-            </td>
-            <td className={`px-3 py-2 text-center font-mono ${dteHot ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+                </Badge>
+            </TableCell>
+            <TableCell className={`text-center font-mono ${dteHot ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
                 {p.dte != null ? `${p.dte}d` : '—'}
-            </td>
-            <td className="px-3 py-2 text-right font-mono text-muted-foreground">
+            </TableCell>
+            <TableCell className="text-right font-mono text-muted-foreground">
                 {p.entryPrice != null ? formatCurrency(p.entryPrice) : '—'}
-            </td>
-            <td className="px-3 py-2 text-right font-mono text-muted-foreground">
+            </TableCell>
+            <TableCell className="text-right font-mono text-muted-foreground">
                 {p.currentPrice != null ? formatCurrency(p.currentPrice) : '—'}
-            </td>
-            <td className="px-3 py-2 text-right">
-                {plDollars == null ? <span className="text-muted-foreground dark:text-muted-foreground">—</span> : (
-                    <span className={`font-mono ${plDollars < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+            </TableCell>
+            <TableCell className="text-right">
+                {plDollars == null ? <span className="text-muted-foreground">—</span> : (
+                    <span className={cn('font-mono', pnlTone(plDollars))}>
                         {plDollars < 0 ? '-' : '+'}{formatCurrency(Math.abs(plDollars))}
                     </span>
                 )}
-            </td>
-            <td className="px-3 py-2 text-right">{fmtPct(p.unrealizedPLpct)}</td>
-            <td className="px-3 py-2 text-right">
+            </TableCell>
+            <TableCell className="text-right">{fmtPct(p.unrealizedPLpct)}</TableCell>
+            <TableCell className="text-right">
                 {p.otmPct == null
-                    ? <span className="text-muted-foreground dark:text-muted-foreground">—</span>
+                    ? <span className="text-muted-foreground">—</span>
                     : <span className={`font-mono ${Number(p.otmPct) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground'}`}>
                         {Number(p.otmPct) < 0 ? 'ITM ' : ''}{Math.abs(Number(p.otmPct)).toFixed(1)}%
                     </span>}
-            </td>
-            <td className="px-3 py-2 text-right">
+            </TableCell>
+            <TableCell className="text-right">
                 {(p.type === 'CSP' || p.type === 'CC') && (
                     <RollChips whatIf={rollKey ? whatIfs[rollKey] : undefined} />
                 )}
-            </td>
-            <td className="px-2 py-2 text-center">
+            </TableCell>
+            <TableCell className="text-center px-2">
                 {(p.type === 'CSP' || p.type === 'CC') && (
                     <button
                         onClick={() => onPayoff(p)}
-                        className="text-muted-foreground hover:text-foreground dark:hover:text-foreground p-1 rounded hover:bg-accent"
+                        className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-accent transition-colors"
                         title="Payoff at expiry"
                     >
                         <BarChart3 className="w-4 h-4" />
                     </button>
                 )}
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 };
 
@@ -232,7 +239,7 @@ export const OpenPositionsTable = () => {
     };
 
     return (
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+        <Card className="overflow-hidden">
             <div className="p-4 border-b border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-muted/50">
                 <h3 className="font-semibold text-foreground">Open Positions</h3>
                 {asOf && (
@@ -243,11 +250,11 @@ export const OpenPositionsTable = () => {
             {showExpiring && (
                 <div className="px-4 py-2 border-b border-border/60 bg-muted flex items-center gap-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-foreground shrink-0" />
-                    <div className="text-xs text-foreground dark:text-foreground font-medium">
+                    <div className="text-xs text-foreground font-medium">
                         Expiring ≤7d: {expiring.map((e) => `${e.underlying} ${fmtStrike(e.strike, e.type === 'CSP' ? 'P' : 'C')}${e.expiry ? ` ${fmtExpiry(e.expiry)}` : ''} (${e.dte}d)`).join(' · ')}
                     </div>
                     <button onClick={dismissExpiring} aria-label="Dismiss expiring notice"
-                        className="ml-auto text-amber-500 hover:text-foreground dark:hover:text-amber-200 p-0.5 rounded">
+                        className="ml-auto text-muted-foreground hover:text-foreground p-0.5 rounded transition-colors">
                         <X className="w-3.5 h-3.5" />
                     </button>
                 </div>
@@ -270,30 +277,30 @@ export const OpenPositionsTable = () => {
                 </div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left [&_th]:border-r [&_th]:border-border [&_th:last-child]:border-r-0 [&_td]:border-r [&_td]:border-border [&_td:last-child]:border-r-0 dark:[&_th]:border-slate-600 dark:[&_td]:border-slate-700">
-                        <thead className="text-xs text-muted-foreground uppercase bg-muted border-b border-border">
-                            <tr>
-                                <th className="px-3 py-2 font-semibold">Position</th>
-                                <th className="px-3 py-2 font-semibold text-center">Type</th>
-                                <th className="px-3 py-2 font-semibold text-center">DTE</th>
-                                <th className="px-3 py-2 font-semibold text-right">Entry</th>
-                                <th className="px-3 py-2 font-semibold text-right">Current</th>
-                                <th className="px-3 py-2 font-semibold text-right">P/L</th>
-                                <th className="px-3 py-2 font-semibold text-right">P/L %</th>
-                                <th className="px-3 py-2 font-semibold text-right">OTM</th>
-                                <th className="px-3 py-2 font-semibold text-right" title="Indicative net credit for rolling the same strike out ~1/+2 weeks (Yahoo quotes)">Roll?</th>
-                                <th className="px-2 py-2 font-semibold text-center"><span className="sr-only">Payoff</span></th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50 dark:divide-border">
+                    <Table className="min-w-[720px]">
+                        <TableHeader>
+                            <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                <TableHead>Position</TableHead>
+                                <TableHead className="text-center">Type</TableHead>
+                                <TableHead className="text-center">DTE</TableHead>
+                                <TableHead className="text-right">Entry</TableHead>
+                                <TableHead className="text-right">Current</TableHead>
+                                <TableHead className="text-right">P/L</TableHead>
+                                <TableHead className="text-right">P/L %</TableHead>
+                                <TableHead className="text-right">OTM</TableHead>
+                                <TableHead className="text-right" title="Indicative net credit for rolling the same strike out ~1/+2 weeks (Yahoo quotes)">Roll?</TableHead>
+                                <TableHead className="text-center px-2"><span className="sr-only">Payoff</span></TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {positions.map((p) => <PositionRow key={p.symbol} p={p} onPayoff={setPayoffPosition} whatIfs={whatIfs} />)}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             )}
             {payoffPosition && (
                 <PayoffModal position={payoffPosition} onClose={() => setPayoffPosition(null)} />
             )}
-        </div>
+        </Card>
     );
 };

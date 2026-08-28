@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
-import { X, RefreshCw, Info } from 'lucide-react';
+import { RefreshCw, Info } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 import { isBuySide } from '../../utils/constants';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 const TRADE_TYPE_INFO = {
     CSP: { label: 'CSP (Sell Put)', description: 'Cash Secured Put — Sell a put, collect premium. Obligated to buy shares at strike if assigned.' },
@@ -35,81 +41,78 @@ export const TradeModal = ({
     const isBuy = isBuySide(formData.type);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
-            <div className="modal-enter bg-card rounded-lg border border-border shadow-sm w-full max-w-xl overflow-hidden my-8">
-                <div className="p-5 border-b border-border flex justify-between items-center bg-muted/50">
-                    <div>
-                        <h2 className="text-lg font-bold text-foreground">
-                            {editingId ? 'Edit Trade' : isRolling ? 'Roll Trade' : 'New Trade'}
-                        </h2>
-                        {isRolling && rollFromTrade && (
-                            <p className="text-xs text-foreground mt-1 flex items-center gap-1">
-                                <RefreshCw className="w-3 h-3" />
-                                Rolling {rollFromTrade.ticker} ${rollFromTrade.strike} {rollFromTrade.type}
-                            </p>
-                        )}
-                    </div>
-                    <button onClick={closeModal} className="text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+        <Dialog open onOpenChange={(open) => { if (!open) closeModal(); }}>
+            <DialogContent className="max-w-xl">
+                <DialogHeader>
+                    <DialogTitle>
+                        {editingId ? 'Edit Trade' : isRolling ? 'Roll Trade' : 'New Trade'}
+                    </DialogTitle>
+                    {isRolling && rollFromTrade && (
+                        <DialogDescription className="flex items-center gap-1 text-foreground">
+                            <RefreshCw className="w-3 h-3" />
+                            Rolling {rollFromTrade.ticker} ${rollFromTrade.strike} {rollFromTrade.type}
+                        </DialogDescription>
+                    )}
+                </DialogHeader>
 
-                <form onSubmit={saveTrade} className="p-6 space-y-4">
+                <form onSubmit={saveTrade} className="space-y-4">
 
                     {/* Account Picker (only when creating new trade with no account selected) */}
                     {needsAccountPicker && (
                         <div>
                             <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Account *</label>
-                            <select
-                                value={modalAccountId || ''}
-                                onChange={(e) => setModalAccountId(e.target.value ? Number(e.target.value) : null)}
-                                className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-card dark:bg-secondary text-foreground"
-                                required
+                            <Select
+                                value={modalAccountId ? String(modalAccountId) : undefined}
+                                onValueChange={(v) => setModalAccountId(Number(v))}
                             >
-                                <option value="">Select account...</option>
-                                {(accounts || []).map(a => (
-                                    <option key={a.id} value={a.id}>{a.name}</option>
-                                ))}
-                            </select>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select account..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {(accounts || []).map(a => (
+                                        <SelectItem key={a.id} value={String(a.id)}>{a.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     )}
 
                     {/* Original Trade Close Section (only when rolling) */}
                     {isRolling && rollFromTrade && (
                         <div className="bg-muted border border-border rounded-lg p-4 space-y-3">
-                            <h3 className="font-semibold text-amber-800 text-sm flex items-center gap-2">
+                            <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
                                 <RefreshCw className="w-4 h-4" />
                                 Close Original Position
                             </h3>
                             <div className="grid grid-cols-3 gap-3 text-sm">
                                 <div>
-                                    <span className="text-foreground text-xs">Ticker</span>
-                                    <p className="font-bold text-amber-900">{rollFromTrade.ticker}</p>
+                                    <span className="text-muted-foreground text-xs">Ticker</span>
+                                    <p className="font-bold text-foreground">{rollFromTrade.ticker}</p>
                                 </div>
                                 <div>
-                                    <span className="text-foreground text-xs">Strike</span>
-                                    <p className="font-bold text-amber-900">${rollFromTrade.strike}</p>
+                                    <span className="text-muted-foreground text-xs">Strike</span>
+                                    <p className="font-bold text-foreground">${rollFromTrade.strike}</p>
                                 </div>
                                 <div>
-                                    <span className="text-foreground text-xs">Entry Premium</span>
-                                    <p className="font-bold text-emerald-600">${rollFromTrade.entryPrice}</p>
+                                    <span className="text-muted-foreground text-xs">Entry Premium</span>
+                                    <p className="font-bold text-emerald-600 dark:text-emerald-400">${rollFromTrade.entryPrice}</p>
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-foreground uppercase mb-1">
+                                <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">
                                     Close Cost (per share) *
                                 </label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-2 text-amber-400">$</span>
-                                    <input
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                                    <Input
                                         type="number" step="0.01" required
                                         value={rollClosePrice}
                                         onChange={(e) => setRollClosePrice(e.target.value)}
-                                        className="w-full pl-7 pr-3 py-2 border border-border rounded-lg focus:ring-amber-500 bg-card"
+                                        className="pl-7"
                                         placeholder="Cost to buy back original"
                                     />
                                 </div>
-                                <div className="text-xs text-foreground mt-1">
+                                <div className="text-xs text-muted-foreground mt-1">
                                     Original P/L: {formatCurrency(
                                         (rollFromTrade.type === 'CALL' || rollFromTrade.type === 'PUT'
                                             ? ((Number(rollClosePrice) || 0) - rollFromTrade.entryPrice)
@@ -131,60 +134,69 @@ export const TradeModal = ({
                     <div className="grid grid-cols-1">
                         <div>
                             <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Ticker</label>
-                            <input
+                            <Input
                                 type="text" name="ticker" required
                                 value={formData.ticker} onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring uppercase bg-card dark:bg-secondary text-foreground"
+                                className="uppercase"
                                 placeholder="e.g. GOOG"
                                 readOnly={isRolling}
                             />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Opened</label>
-                            <input type="date" name="openedDate" required value={formData.openedDate} onChange={handleInputChange} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card dark:bg-secondary text-foreground" />
+                            <Input type="date" name="openedDate" required value={formData.openedDate} onChange={handleInputChange} />
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Expiration *</label>
-                            <input type="date" name="expirationDate" required value={formData.expirationDate} onChange={handleInputChange} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card dark:bg-secondary text-foreground" />
+                            <Input type="date" name="expirationDate" required value={formData.expirationDate} onChange={handleInputChange} />
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Closed (Opt)</label>
-                            <input type="date" name="closedDate" value={formData.closedDate} onChange={handleInputChange} className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card dark:bg-secondary text-foreground" />
+                            <Input type="date" name="closedDate" value={formData.closedDate} onChange={handleInputChange} />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div className="col-span-1">
                             <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1 flex items-center gap-1">
                                 Type
                                 <button
                                     type="button"
                                     onClick={() => setShowTypeHelp(!showTypeHelp)}
-                                    className="text-muted-foreground hover:text-indigo-500 transition-colors"
+                                    className="text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     <Info className="w-3 h-3" />
                                 </button>
                             </label>
-                            <select name="type" value={formData.type} onChange={handleInputChange} className="w-full px-3 py-2 border border-border rounded-lg bg-card dark:bg-secondary text-foreground" disabled={isRolling}>
-                                {Object.entries(TRADE_TYPE_INFO).map(([key, info]) => (
-                                    <option key={key} value={key}>{info.label}</option>
-                                ))}
-                            </select>
+                            <Select
+                                value={formData.type}
+                                onValueChange={(v) => handleInputChange({ target: { name: 'type', value: v } })}
+                                disabled={isRolling}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.entries(TRADE_TYPE_INFO).map(([key, info]) => (
+                                        <SelectItem key={key} value={key}>{info.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="col-span-1">
                             <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Strike *</label>
-                            <input type="number" step="0.5" name="strike" required value={formData.strike} onChange={handleInputChange} className="w-full px-3 py-2 border border-border rounded-lg bg-card dark:bg-secondary text-foreground" placeholder="0.00" />
+                            <Input type="number" step="0.5" name="strike" required value={formData.strike} onChange={handleInputChange} placeholder="0.00" />
                         </div>
                         <div className="col-span-1">
                             <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Qty</label>
-                            <input type="number" name="quantity" required value={formData.quantity} onChange={handleInputChange} className="w-full px-3 py-2 border border-border rounded-lg bg-card dark:bg-secondary text-foreground" />
+                            <Input type="number" name="quantity" required value={formData.quantity} onChange={handleInputChange} />
                         </div>
                         <div className="col-span-1">
                             <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Delta</label>
-                            <input type="number" step="0.01" min="0" max="1" name="delta" value={formData.delta} onChange={handleInputChange} className="w-full px-3 py-2 border border-border rounded-lg bg-card dark:bg-secondary text-foreground" placeholder="0.30" />
+                            <Input type="number" step="0.01" min="0" max="1" name="delta" value={formData.delta} onChange={handleInputChange} placeholder="0.30" />
                         </div>
                     </div>
 
@@ -193,19 +205,14 @@ export const TradeModal = ({
                         <div className="bg-muted border border-border rounded-lg p-3 space-y-2">
                             {Object.entries(TRADE_TYPE_INFO).map(([key, info]) => (
                                 <div key={key} className="flex gap-2">
-                                    <span className={`text-xs font-bold min-w-[52px] ${
-                                        key === 'CSP' ? 'text-blue-600' :
-                                        key === 'CC' ? 'text-purple-600' :
-                                        key === 'CALL' ? 'text-emerald-600' :
-                                        'text-orange-600'
-                                    }`}>{key}</span>
+                                    <span className="text-xs font-bold min-w-[52px] text-foreground">{key}</span>
                                     <span className="text-xs text-muted-foreground">{info.description}</span>
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-4 bg-muted dark:bg-muted/50 p-4 rounded-lg border border-border dark:border-border">
+                    <div className="grid grid-cols-2 gap-4 bg-muted p-4 rounded-lg border border-border">
                         <div>
                             <label className={`block text-xs font-semibold uppercase mb-1 ${
                                 isBuy
@@ -215,14 +222,14 @@ export const TradeModal = ({
                                 {isRolling ? 'New Premium *' : isBuy ? 'Premium Paid ($)' : 'Entry Premium ($)'}
                             </label>
                             <div className="relative">
-                                <span className="absolute left-3 top-2 text-muted-foreground">$</span>
-                                <input
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                                <Input
                                     type="number" step="0.01" name="entryPrice" required
                                     value={formData.entryPrice} onChange={handleInputChange}
-                                    className={`w-full pl-7 pr-3 py-2 border rounded-lg bg-card dark:bg-secondary text-foreground ${
+                                    className={`pl-7 ${
                                         isBuy
-                                            ? 'border-rose-500/30 dark:border-rose-500/30 focus:ring-rose-500'
-                                            : 'border-emerald-500/30 dark:border-emerald-700 focus:ring-emerald-500'
+                                            ? 'border-rose-500/30 dark:border-rose-400/30 focus-visible:ring-rose-500'
+                                            : 'border-emerald-500/30 dark:border-emerald-400/30 focus-visible:ring-emerald-500'
                                     }`}
                                     placeholder="Price per share"
                                 />
@@ -243,14 +250,14 @@ export const TradeModal = ({
                                     {isBuy ? 'Sell Price ($)' : 'Close Cost ($)'}
                                 </label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-2 text-muted-foreground">$</span>
-                                    <input
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                                    <Input
                                         type="number" step="0.01" name="closePrice"
                                         value={formData.closePrice} onChange={handleInputChange}
-                                        className={`w-full pl-7 pr-3 py-2 border rounded-lg bg-card dark:bg-secondary text-foreground ${
+                                        className={`pl-7 ${
                                             isBuy
-                                                ? 'border-emerald-500/30 dark:border-emerald-700 focus:ring-emerald-500'
-                                                : 'border-rose-500/30 dark:border-rose-500/30 focus:ring-rose-500'
+                                                ? 'border-emerald-500/30 dark:border-emerald-400/30 focus-visible:ring-emerald-500'
+                                                : 'border-rose-500/30 dark:border-rose-400/30 focus-visible:ring-rose-500'
                                         }`}
                                         placeholder="0.00 if open"
                                     />
@@ -285,11 +292,11 @@ export const TradeModal = ({
                     <div>
                         <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Commission ($)</label>
                         <div className="relative">
-                            <span className="absolute left-3 top-2 text-muted-foreground">$</span>
-                            <input
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                            <Input
                                 type="number" step="0.01" min="0" name="commission"
                                 value={formData.commission} onChange={handleInputChange}
-                                className="w-full pl-7 pr-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-card dark:bg-secondary text-foreground"
+                                className="pl-7"
                                 placeholder="Auto"
                             />
                         </div>
@@ -298,12 +305,12 @@ export const TradeModal = ({
 
                     <div>
                         <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1">Notes</label>
-                        <textarea
+                        <Textarea
                             name="notes"
                             value={formData.notes}
                             onChange={handleInputChange}
                             rows={2}
-                            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-card dark:bg-secondary text-foreground resize-none"
+                            className="resize-none"
                             placeholder="Optional notes about this trade..."
                         />
                     </div>
@@ -317,10 +324,12 @@ export const TradeModal = ({
                                         key={s}
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, status: s }))}
-                                        className={`py-2 text-xs font-medium rounded-lg border ${formData.status === s
-                                            ? 'bg-primary dark:bg-primary text-white border-indigo-600 dark:border-ring'
-                                            : 'bg-card dark:bg-secondary text-muted-foreground border-border hover:bg-accent dark:hover:bg-accent'
-                                            }`}
+                                        className={cn(
+                                            'py-2 text-xs font-medium rounded-md border transition-colors',
+                                            formData.status === s
+                                                ? 'bg-foreground text-background border-foreground'
+                                                : 'bg-background text-muted-foreground border-input hover:bg-accent hover:text-foreground'
+                                        )}
                                     >
                                         {s}
                                     </button>
@@ -330,15 +339,15 @@ export const TradeModal = ({
                         </div>
                     )}
 
-                    <div className="pt-4 flex gap-3">
-                        <button type="button" onClick={closeModal} className="flex-1 px-4 py-2 border border-border rounded-lg text-foreground font-medium hover:bg-accent dark:hover:bg-accent">Cancel</button>
-                        <button type="submit" disabled={needsAccountPicker && !modalAccountId} className="flex-1 px-4 py-2 bg-primary dark:bg-primary rounded-lg text-white font-semibold hover:bg-primary/90 dark:hover:bg-primary/90 disabled:bg-secondary dark:disabled:bg-slate-600">
+                    <div className="pt-2 flex gap-3">
+                        <Button type="button" variant="outline" className="flex-1" onClick={closeModal}>Cancel</Button>
+                        <Button type="submit" className="flex-1" disabled={needsAccountPicker && !modalAccountId}>
                             {editingId ? 'Update Trade' : isRolling ? 'Roll & Create New' : 'Save Trade'}
-                        </button>
+                        </Button>
                     </div>
 
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };

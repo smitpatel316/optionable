@@ -12,6 +12,9 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import { formatCurrency, formatDate } from '../../utils/formatters';
+import { Card, CardContent } from '@/components/ui/card';
+import { pnlTone } from '@/lib/pnl';
+import { cn } from '@/lib/utils';
 
 const PERIODS = [
     { key: '1m', label: '1M' },
@@ -25,15 +28,15 @@ const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload;
         return (
-            <div className="bg-card p-3 rounded-md shadow-sm border border-border text-sm">
+            <div className="bg-popover p-3 rounded-md shadow-md border border-border text-sm text-popover-foreground">
                 <p className="font-semibold text-foreground">{data.tickers}</p>
                 <p className="text-muted-foreground">{formatDate(data.fullDate)}</p>
                 {data.dayBooked !== 0 && (
-                    <p className={`font-mono font-medium ${data.dayBooked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    <p className={cn('font-mono font-medium', pnlTone(data.dayBooked))}>
                         Day cash: {formatCurrency(data.dayBooked)}
                     </p>
                 )}
-                <p className={`font-mono font-bold ${data.booked >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                <p className={cn('font-mono font-bold', pnlTone(data.booked))}>
                     Booked (cash): {formatCurrency(data.booked)}
                 </p>
                 <p className="font-mono font-medium text-muted-foreground">
@@ -54,33 +57,35 @@ export const PnLChart = ({
 }) => {
     if (chartData.length === 0) return null;
 
-    const chartColor = totalPnL >= 0 ? "#10b981" : "#ef4444";
+    const chartColor = totalPnL >= 0 ? "#10b981" : "#f43f5e";
 
     return (
-        <div className="bg-card rounded-lg shadow-sm border border-border p-5">
-            <div className="flex items-center justify-between mb-4">
+        <Card>
+            <CardContent className="p-4 md:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-4 min-w-0">
                 <h3 className="font-semibold text-foreground flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-muted-foreground" />
                     Cumulative P/L
                 </h3>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                     {/* Time Period Selector */}
-                    <div className="flex bg-muted rounded-lg p-0.5">
+                    <div className="flex bg-muted rounded-md p-1 gap-0.5">
                         {PERIODS.map(period => (
                             <button
                                 key={period.key}
                                 onClick={() => onPeriodChange(period.key)}
-                                className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                                className={cn(
+                                    'px-2 py-1 text-xs font-medium rounded-sm transition-colors',
                                     chartPeriod === period.key
-                                        ? 'bg-card dark:bg-secondary text-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground'
-                                }`}
+                                        ? 'bg-background text-foreground shadow'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                )}
                             >
                                 {period.label}
                             </button>
                         ))}
                     </div>
-                    <span className={`text-sm font-mono font-bold ${totalPnL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    <span className={cn('text-sm font-mono font-bold', pnlTone(totalPnL))}>
                         {formatCurrency(totalPnL)}
                     </span>
                 </div>
@@ -94,21 +99,21 @@ export const PnLChart = ({
                                 <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#334155' : '#e2e8f0'} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis
                             dataKey="date"
-                            tick={{ fontSize: 11, fill: darkMode ? '#64748b' : '#94a3b8' }}
-                            tickLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
-                            axisLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                            tickLine={{ stroke: 'hsl(var(--border))' }}
+                            axisLine={{ stroke: 'hsl(var(--border))' }}
                         />
                         <YAxis
-                            tick={{ fontSize: 11, fill: darkMode ? '#64748b' : '#94a3b8' }}
-                            tickLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
-                            axisLine={{ stroke: darkMode ? '#334155' : '#e2e8f0' }}
+                            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                            tickLine={{ stroke: 'hsl(var(--border))' }}
+                            axisLine={{ stroke: 'hsl(var(--border))' }}
                             tickFormatter={(value) => `$${value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value}`}
                         />
                         <Tooltip content={<CustomTooltip />} />
-                        <Legend wrapperStyle={{ fontSize: 12 }} />
+                        <Legend wrapperStyle={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }} />
                         <Area
                             type="monotone"
                             dataKey="booked"
@@ -122,7 +127,7 @@ export const PnLChart = ({
                             type="monotone"
                             dataKey="finalized"
                             name="Finalized"
-                            stroke={darkMode ? '#94a3b8' : '#64748b'}
+                            stroke="hsl(var(--muted-foreground))"
                             strokeWidth={2}
                             strokeDasharray="6 4"
                             dot={false}
@@ -130,6 +135,7 @@ export const PnLChart = ({
                     </ComposedChart>
                 </ResponsiveContainer>
             </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 };

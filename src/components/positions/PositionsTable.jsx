@@ -3,6 +3,12 @@ import { Wallet, TrendingUp, TrendingDown, RefreshCw, DollarSign, RotateCcw } fr
 import { formatCurrency } from '../../utils/formatters';
 import { positionsApi } from '../../services/api';
 import { PositionSellModal } from './PositionSellModal';
+import { Card } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { pnlTone } from '@/lib/pnl';
+import { cn } from '@/lib/utils';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -103,14 +109,14 @@ export const PositionsTable = ({ showToast, accountId, onPositionSold }) => {
 
     if (loading) {
         return (
-            <div className="bg-card rounded-lg shadow-sm border border-border p-8">
-                <div className="animate-spin w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full mx-auto"></div>
-            </div>
+            <Card className="p-8">
+                <div className="animate-spin w-6 h-6 border-2 border-foreground border-t-transparent rounded-full mx-auto"></div>
+            </Card>
         );
     }
 
     return (
-        <div className="bg-card rounded-lg shadow-sm border border-border">
+        <Card className="overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -122,12 +128,12 @@ export const PositionsTable = ({ showToast, accountId, onPositionSold }) => {
                                 {summary.openPositions} open
                             </span>
                             {summary.realizedGainLoss !== 0 && (
-                                <span className={`font-mono ${summary.realizedGainLoss >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                <span className={cn('font-mono', pnlTone(summary.realizedGainLoss))}>
                                     Realized: {formatCurrency(summary.realizedGainLoss)}
                                 </span>
                             )}
                             {totalUnrealizedGL !== 0 && (
-                                <span className={`font-mono ${totalUnrealizedGL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                <span className={cn('font-mono', pnlTone(totalUnrealizedGL))}>
                                     Unrealized: {formatCurrency(totalUnrealizedGL)}
                                 </span>
                             )}
@@ -135,29 +141,26 @@ export const PositionsTable = ({ showToast, accountId, onPositionSold }) => {
                     )}
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
+                    <div className="flex bg-muted rounded-md p-1 gap-0.5">
                         {['open', 'closed', 'all'].map(f => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-2 py-0.5 text-xs rounded font-medium transition-colors capitalize ${
+                                className={cn(
+                                    'px-2 py-0.5 text-xs rounded-sm font-medium transition-colors capitalize',
                                     filter === f
-                                        ? 'bg-muted text-foreground dark:bg-indigo-900/30 dark:text-foreground'
-                                        : 'text-muted-foreground hover:bg-accent dark:hover:bg-accent'
-                                }`}
+                                        ? 'bg-background text-foreground shadow'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                )}
                             >
                                 {f}
                             </button>
                         ))}
                     </div>
-                    <button
-                        onClick={fetchPrices}
-                        disabled={refreshing}
-                        className="flex items-center gap-1 px-2 py-1 text-xs bg-muted hover:bg-accent dark:hover:bg-accent rounded transition-colors text-muted-foreground"
-                    >
-                        <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
+                    <Button variant="secondary" size="sm" onClick={fetchPrices} disabled={refreshing}>
+                        <RefreshCw className={cn('w-3 h-3', refreshing && 'animate-spin')} />
                         Prices
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -168,19 +171,19 @@ export const PositionsTable = ({ showToast, accountId, onPositionSold }) => {
                 </div>
             ) : (
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-border">
-                                <th className="text-left p-3 text-muted-foreground font-medium">Ticker</th>
-                                <th className="text-right p-3 text-muted-foreground font-medium">Shares</th>
-                                <th className="text-right p-3 text-muted-foreground font-medium">Cost Basis</th>
-                                <th className="text-right p-3 text-muted-foreground font-medium">Current</th>
-                                <th className="text-right p-3 text-muted-foreground font-medium">P/L</th>
-                                <th className="text-center p-3 text-muted-foreground font-medium">Status</th>
-                                <th className="text-center p-3 text-muted-foreground font-medium">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <Table className="min-w-[560px]">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Ticker</TableHead>
+                                <TableHead className="text-right">Shares</TableHead>
+                                <TableHead className="text-right">Cost Basis</TableHead>
+                                <TableHead className="text-right">Current</TableHead>
+                                <TableHead className="text-right">P/L</TableHead>
+                                <TableHead className="text-center">Status</TableHead>
+                                <TableHead className="text-center">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {positions.map(position => {
                                 const currentPrice = position.soldDate ? position.salePrice : prices[position.ticker]?.price;
                                 const gainLoss = position.soldDate
@@ -188,67 +191,57 @@ export const PositionsTable = ({ showToast, accountId, onPositionSold }) => {
                                     : (currentPrice ? (currentPrice - position.costBasis) * position.shares : null);
 
                                 return (
-                                    <tr key={position.id} className="border-b border-border/50 hover:bg-accent dark:hover:bg-accent/30">
-                                        <td className="p-3">
+                                    <TableRow key={position.id}>
+                                        <TableCell>
                                             <span className="font-medium text-foreground">{position.ticker}</span>
                                             <span className="block text-xs text-muted-foreground">{position.acquiredDate}</span>
-                                        </td>
-                                        <td className="p-3 text-right font-mono text-foreground">
+                                        </TableCell>
+                                        <TableCell className="text-right font-mono text-foreground">
                                             {position.shares}
-                                        </td>
-                                        <td className="p-3 text-right font-mono text-foreground">
+                                        </TableCell>
+                                        <TableCell className="text-right font-mono text-foreground">
                                             ${position.costBasis.toFixed(2)}
-                                        </td>
-                                        <td className="p-3 text-right font-mono">
+                                        </TableCell>
+                                        <TableCell className="text-right font-mono">
                                             {currentPrice ? (
                                                 <span className="text-foreground">${currentPrice.toFixed(2)}</span>
                                             ) : (
                                                 <span className="text-muted-foreground">--</span>
                                             )}
-                                        </td>
-                                        <td className="p-3 text-right">
+                                        </TableCell>
+                                        <TableCell className="text-right">
                                             {gainLoss !== null ? (
-                                                <span className={`font-mono font-medium flex items-center justify-end gap-1 ${gainLoss >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                                <span className={cn('font-mono font-medium flex items-center justify-end gap-1', pnlTone(gainLoss))}>
                                                     {gainLoss >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                                                     {formatCurrency(gainLoss)}
                                                 </span>
                                             ) : (
                                                 <span className="text-muted-foreground">--</span>
                                             )}
-                                        </td>
-                                        <td className="p-3 text-center">
-                                            <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
-                                                position.soldDate
-                                                    ? 'bg-muted text-muted-foreground'
-                                                    : 'bg-success/15 text-emerald-700 dark:text-emerald-400'
-                                            }`}>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Badge variant={position.soldDate ? 'muted' : 'outline'}>
                                                 {position.soldDate ? 'Closed' : 'Open'}
-                                            </span>
-                                        </td>
-                                        <td className="p-3 text-center">
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-center">
                                             {!position.soldDate ? (
-                                                <button
-                                                    onClick={() => setSellingPosition(position)}
-                                                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-foreground bg-muted hover:bg-muted dark:hover:bg-amber-900/40 rounded transition-colors"
-                                                >
+                                                <Button variant="secondary" size="sm" onClick={() => setSellingPosition(position)}>
                                                     <DollarSign className="w-3 h-3" />
                                                     Sell
-                                                </button>
+                                                </Button>
                                             ) : (
-                                                <button
-                                                    onClick={() => handleReopen(position)}
-                                                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-foreground bg-muted hover:bg-muted dark:hover:bg-amber-900/40 rounded transition-colors"
-                                                >
+                                                <Button variant="secondary" size="sm" onClick={() => handleReopen(position)}>
                                                     <RotateCcw className="w-3 h-3" />
                                                     Reopen
-                                                </button>
+                                                </Button>
                                             )}
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 );
                             })}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             )}
 
@@ -259,6 +252,6 @@ export const PositionsTable = ({ showToast, accountId, onPositionSold }) => {
                 onSave={handleSell}
                 position={sellingPosition}
             />
-        </div>
+        </Card>
     );
 };

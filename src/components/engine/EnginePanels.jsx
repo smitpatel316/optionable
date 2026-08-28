@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { API_URL } from '../../utils/constants';
 import { formatCurrency } from '../../utils/formatters';
+import { Card } from '@/components/ui/card';
 
 // Engine panels: capital card + scan funnel, fed by wheel-stack pushes
 // (POST /api/engine/dashboard). Empty states until the first push arrives.
@@ -53,9 +54,9 @@ const Freshness = ({ updatedAt }) => {
 };
 
 const EmptyState = ({ message }) => (
-    <div className="bg-card p-4 rounded-lg shadow-sm border border-dashed border-border text-center text-sm text-muted-foreground">
+    <Card className="border-dashed p-4 text-center text-sm text-muted-foreground">
         {message}
-    </div>
+    </Card>
 );
 
 // ---------- Capital card ----------
@@ -79,7 +80,7 @@ const CapitalCard = ({ snapshot, updatedAt }) => {
     const optionsBp = snapshot.optionsBuyingPower ?? 0;
 
     return (
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+        <Card className="overflow-hidden">
             <div className="p-3 border-b border-border bg-muted/50 flex items-center justify-between">
                 <span className="font-semibold text-sm text-foreground">Capital &amp; Collateral</span>
                 <Freshness updatedAt={updatedAt} />
@@ -94,12 +95,12 @@ const CapitalCard = ({ snapshot, updatedAt }) => {
                     </div>
                     <div className="h-2 rounded-full bg-muted overflow-hidden">
                         <div
-                            className={`h-full rounded-full ${riskPct > 80 ? 'bg-destructive' : riskPct > 55 ? 'bg-secondary' : 'bg-success'}`}
+                            className={`h-full rounded-full ${riskPct > 80 ? 'bg-destructive' : 'bg-foreground/70'}`}
                             style={{ width: `${riskPct}%` }}
                         />
                     </div>
                 </div>
-                <div className="divide-y divide-slate-50 dark:divide-border">
+                <div className="divide-y divide-border">
                     <CapitalRow label="Cash" value={formatCurrency(snapshot.cash ?? 0)} />
                     <CapitalRow
                         label="Options BP"
@@ -131,7 +132,7 @@ const CapitalCard = ({ snapshot, updatedAt }) => {
                     </div>
                 )}
             </div>
-        </div>
+        </Card>
     );
 };
 
@@ -141,7 +142,7 @@ const ACTION_STYLE = {
     sold: 'bg-success/15 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300',
     skipped: 'bg-muted text-muted-foreground',
     blocked: 'bg-rose-500/15 dark:bg-red-900/40 text-rose-600 dark:text-rose-400',
-    none: 'bg-muted dark:bg-amber-900/40 text-foreground dark:text-foreground',
+    none: 'bg-muted text-foreground',
 };
 
 const actionBadge = (sym) => {
@@ -174,7 +175,7 @@ const ScanFunnel = ({ scanRun, updatedAt }) => {
     }
 
     return (
-        <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+        <Card className="overflow-hidden">
             <div className="p-3 border-b border-border bg-muted/50 flex items-center justify-between">
                 <span className="font-semibold text-sm text-foreground">
                     Scan funnel{scanRun.slot ? ` · ${scanRun.slot}` : ''}
@@ -205,7 +206,7 @@ const ScanFunnel = ({ scanRun, updatedAt }) => {
 
                 <div className="overflow-y-auto max-h-64">
                     <table className="w-full text-sm">
-                        <tbody className="divide-y divide-slate-50 dark:divide-border">
+                        <tbody className="divide-y divide-border">
                             {symbols.map((s) => {
                                 const badge = actionBadge(s);
                                 return (
@@ -226,7 +227,7 @@ const ScanFunnel = ({ scanRun, updatedAt }) => {
                     </table>
                 </div>
             </div>
-        </div>
+        </Card>
     );
 };
 
