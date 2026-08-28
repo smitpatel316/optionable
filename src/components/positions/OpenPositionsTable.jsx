@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { BarChart3 } from 'lucide-react';
 import { API_URL } from '../../utils/constants';
 import { formatCurrency } from '../../utils/formatters';
+import { PayoffModal } from '../analytics/PayoffModal';
 
 // Open Positions table (2026-08-22): live-ish view of the wheel's open CSPs,
 // covered calls, and the SGOV cash sweep. Fed by wheel-stack's end-of-run push
@@ -53,7 +55,7 @@ const fmtPct = (value, goodWhenPositive = true) => {
     );
 };
 
-const PositionRow = ({ p }) => {
+const PositionRow = ({ p, onPayoff }) => {
     const optType = p.type === 'CSP' ? 'P' : p.type === 'CC' ? 'C' : '';
     const label = p.type === 'SGOV' || p.type === 'STOCK'
         ? `${p.underlying}${p.contracts ? ` ×${p.contracts}` : ''}`
@@ -100,6 +102,17 @@ const PositionRow = ({ p }) => {
                         {Number(p.otmPct) < 0 ? 'ITM ' : ''}{Math.abs(Number(p.otmPct)).toFixed(1)}%
                     </span>}
             </td>
+            <td className="px-2 py-2 text-center">
+                {(p.type === 'CSP' || p.type === 'CC') && (
+                    <button
+                        onClick={() => onPayoff(p)}
+                        className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                        title="Payoff at expiry"
+                    >
+                        <BarChart3 className="w-4 h-4" />
+                    </button>
+                )}
+            </td>
         </tr>
     );
 };
@@ -107,6 +120,7 @@ const PositionRow = ({ p }) => {
 export const OpenPositionsTable = () => {
     const [data, setData] = useState(null);
     const [failed, setFailed] = useState(false);
+    const [payoffPosition, setPayoffPosition] = useState(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -169,13 +183,17 @@ export const OpenPositionsTable = () => {
                                 <th className="px-3 py-2 font-semibold text-right">P/L</th>
                                 <th className="px-3 py-2 font-semibold text-right">P/L %</th>
                                 <th className="px-3 py-2 font-semibold text-right">OTM</th>
+                                <th className="px-2 py-2 font-semibold text-center"><span className="sr-only">Payoff</span></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
-                            {positions.map((p) => <PositionRow key={p.symbol} p={p} />)}
+                            {positions.map((p) => <PositionRow key={p.symbol} p={p} onPayoff={setPayoffPosition} />)}
                         </tbody>
                     </table>
                 </div>
+            )}
+            {payoffPosition && (
+                <PayoffModal position={payoffPosition} onClose={() => setPayoffPosition(null)} />
             )}
         </div>
     );
