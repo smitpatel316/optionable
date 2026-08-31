@@ -8,7 +8,9 @@ export const useStats = (trades, accountId) => {
         realizedCapitalGL: 0,
         openPositions: 0,
         closedPositions: 0,
-        totalCommissions: 0
+        totalCommissions: 0,
+        openPremium: 0,
+        realizedPlusReconciled: 0
     });
     const [chartPeriod, setChartPeriod] = useState('all');
 
@@ -22,7 +24,9 @@ export const useStats = (trades, accountId) => {
                 realizedCapitalGL: json.data.realizedCapitalGL || 0,
                 openPositions: json.data.openPositions || 0,
                 closedPositions: json.data.closedPositions || 0,
-                totalCommissions: json.data.totalCommissions || 0
+                totalCommissions: json.data.totalCommissions || 0,
+                openPremium: json.data.openPremium || 0,
+                realizedPlusReconciled: json.data.realizedPlusReconciled || 0
             });
         } catch (err) {
             console.error('Error fetching capital gains stats:', err);
@@ -163,7 +167,9 @@ export const useStats = (trades, accountId) => {
             openPositions: capitalGainsStats.openPositions,
             closedPositions: capitalGainsStats.closedPositions,
             totalPnLWithCapitalGains: totalPnL + capitalGainsStats.realizedCapitalGL,
-            totalCommissions: capitalGainsStats.totalCommissions
+            totalCommissions: capitalGainsStats.totalCommissions,
+            openPremium: capitalGainsStats.openPremium,
+            realizedPlusReconciled: capitalGainsStats.realizedPlusReconciled
         };
     }, [trades, capitalGainsStats, chartPeriod]);
 
