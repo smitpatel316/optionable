@@ -67,3 +67,18 @@ export const calculateMetrics = (trade, liveOptionPrice) => {
         daysHeld
     };
 };
+
+// ROI on currently deployed capital (Smit's framing, 2026-08-31):
+// realized P/L against the capital at risk right now, plus linearly derived
+// monthly / annualized rates over the strategy's active span.
+// Returns percentages (0.79 means 0.79%).
+export const roiOnDeployedCapital = (realized, capitalAtRisk, earliestOpenedDate, now = new Date()) => {
+    const first = earliestOpenedDate ? new Date(earliestOpenedDate) : null;
+    const daysActive = first && !Number.isNaN(first.getTime())
+        ? Math.max(1, Math.floor((now - first) / 86400000))
+        : 0;
+    const roi = capitalAtRisk > 0 ? (realized / capitalAtRisk) * 100 : 0;
+    const monthly = daysActive > 0 ? roi * (30.44 / daysActive) : 0;
+    const annualized = daysActive > 0 ? roi * (365 / daysActive) : 0;
+    return { roi, monthly, annualized, daysActive };
+};

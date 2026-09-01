@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { API_URL } from '../utils/constants';
-import { calculateMetrics } from '../utils/calculations';
+import { calculateMetrics, roiOnDeployedCapital } from '../utils/calculations';
 import { bookedPnL as computeBookedPnL, finalizedPnL as computeFinalizedPnL, tradeCashEvents, dailyCumulativeSeries } from '../utils/cashBasis';
 
 export const useStats = (trades, accountId) => {
@@ -133,6 +133,19 @@ export const useStats = (trades, accountId) => {
         const capitalAtRisk = openTrades
             .reduce((acc, t) => acc + calculateMetrics(t).collateral, 0);
 
+        // ROI on currently deployed capital with linear monthly/annualized
+        // rates (Smit's framing 2026-08-31); span starts at the earliest
+        // trade in full history regardless of the chart period filter.
+        const openedDates = trades
+            .map(t => t.openedDate)
+            .filter(Boolean)
+            .sort();
+        const deployedRoi = roiOnDeployedCapital(
+            capitalGainsStats.realizedPlusReconciled || 0,
+            capitalAtRisk,
+            openedDates[0] || null
+        );
+
         const rolledCount = filteredTrades.filter(t => t.status === 'Rolled').length;
 
         const totalPremiumCollected = allClosedTrades.reduce((acc, t) => {
@@ -169,7 +182,11 @@ export const useStats = (trades, accountId) => {
             totalPnLWithCapitalGains: totalPnL + capitalGainsStats.realizedCapitalGL,
             totalCommissions: capitalGainsStats.totalCommissions,
             openPremium: capitalGainsStats.openPremium,
-            realizedPlusReconciled: capitalGainsStats.realizedPlusReconciled
+            realizedPlusReconciled: capitalGainsStats.realizedPlusReconciled,
+            roiDeployed: deployedRoi.roi,
+            roiDeployedMonthly: deployedRoi.monthly,
+            roiDeployedAnnualized: deployedRoi.annualized,
+            daysActive: deployedRoi.daysActive
         };
     }, [trades, capitalGainsStats, chartPeriod]);
 

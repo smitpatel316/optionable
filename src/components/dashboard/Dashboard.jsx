@@ -38,10 +38,19 @@ export const Dashboard = ({ stats }) => {
             />
 
             <KpiCard
-                label="ROI"
-                value={formatPercent(stats.totalRoi ?? stats.avgRoi)}
-                valueClassName={pnlTone(stats.totalRoi ?? stats.avgRoi)}
-                subtext={`${stats.closedTradesCount} closed trades`}
+                label="ROI on Deployed"
+                value={formatPercent(stats.roiDeployed ?? 0)}
+                valueClassName={pnlTone(stats.roiDeployed ?? 0)}
+                subtext={(
+                    <>
+                        <span className="block">
+                            ≈{formatPercent(stats.roiDeployedMonthly ?? 0)}/mo · ≈{formatPercent(stats.roiDeployedAnnualized ?? 0)}/yr
+                        </span>
+                        <span className="block">
+                            {formatCurrency(realizedReconciled)} realized · {stats.closedTradesCount} closed trades · {stats.daysActive}d active
+                        </span>
+                    </>
+                )}
             />
 
             <KpiCard
