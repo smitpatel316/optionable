@@ -23,6 +23,7 @@ import {
     TabBar,
     Dashboard,
     PnLChart,
+    PnLCalendar,
     EnginePanels,
     TradeTable,
     OpenPositionsTable,
@@ -238,6 +239,9 @@ export default function App() {
                             totalPnL={stats.bookedPnL ?? stats.totalPnL}
                             darkMode={darkMode}
                         />
+
+                        {/* Daily P/L calendar */}
+                        <PnLCalendar trades={trades} />
 
                         {/* Open Positions (wheel engine feed: CSPs, CCs, SGOV sweep) */}
                         <OpenPositionsTable />

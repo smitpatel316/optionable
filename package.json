@@ -26,8 +26,10 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
+    "date-fns": "^4.4.0",
     "express": "^4.21.1",
     "papaparse": "^5.5.3",
+    "react-day-picker": "9",
     "tailwind-merge": "^3.6.0",
     "yahoo-finance2": "^3.13.2"
   },

@@ -13,6 +13,7 @@ export { EnginePanels } from './engine/EnginePanels';
 
 // Chart Components
 export { PnLChart } from './chart/PnLChart';
+export { PnLCalendar } from './chart/PnLCalendar';
 
 // Trade Components
 export { TradeTable } from './trades/TradeTable';
